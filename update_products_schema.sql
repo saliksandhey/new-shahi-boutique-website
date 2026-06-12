@@ -1,0 +1,20 @@
+-- Run this in your Supabase SQL Editor to add the missing advanced fields to the products table.
+
+ALTER TABLE products 
+  ADD COLUMN IF NOT EXISTS short_description TEXT,
+  ADD COLUMN IF NOT EXISTS price DECIMAL(10,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS sale_price DECIMAL(10,2),
+  ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'DRAFT',
+  ADD COLUMN IF NOT EXISTS fabric TEXT,
+  ADD COLUMN IF NOT EXISTS material TEXT,
+  ADD COLUMN IF NOT EXISTS care_instructions TEXT,
+  ADD COLUMN IF NOT EXISTS country_of_origin TEXT,
+  ADD COLUMN IF NOT EXISTS weight DECIMAL(10,2),
+  ADD COLUMN IF NOT EXISTS dimensions TEXT,
+  ADD COLUMN IF NOT EXISTS meta_title TEXT,
+  ADD COLUMN IF NOT EXISTS meta_description TEXT,
+  ADD COLUMN IF NOT EXISTS og_image TEXT,
+  ADD COLUMN IF NOT EXISTS keywords TEXT,
+  ADD COLUMN IF NOT EXISTS canonical_url TEXT;

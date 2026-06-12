@@ -1,0 +1,262 @@
+'use server'
+
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { getRazorpayInstance } from '@/lib/razorpay'
+import crypto from 'crypto'
+import { sendOrderConfirmationEmail } from '@/lib/actions/emails'
+
+export type CartInputItem = {
+  productId: string
+  quantity: number
+}
+
+// 1. Calculate Server Totals
+export async function calculateOrderTotal(items: CartInputItem[], shippingMethod: string, couponCode?: string) {
+  const supabase = await createAdminClient()
+  
+  let subtotal = 0
+  let discount = 0
+  let shipping = shippingMethod === 'express' ? 25 : 10 // Mock logic
+
+  const validatedItems = []
+
+  for (const item of items) {
+    const { data: product } = await supabase.from('products').select('price, sale_price, name, stock').eq('id', item.productId).single()
+    if (!product) throw new Error(`Product not found: ${item.productId}`)
+    
+    let price = product.sale_price || product.price
+    let availableStock = product.stock
+
+    if (availableStock < item.quantity) {
+      throw new Error(`Insufficient stock for ${product.name}`)
+    }
+
+    subtotal += price * item.quantity
+    validatedItems.push({
+      productId: item.productId,
+      quantity: item.quantity,
+      price: price,
+      name: product.name,
+    })
+  }
+
+  // Free shipping over $150
+  if (subtotal > 150 && shippingMethod !== 'express') shipping = 0
+
+  let couponId = null
+  let appliedDiscountText = ''
+  if (couponCode) {
+    const { data: coupon } = await supabase.from('coupons').select('*').eq('code', couponCode.toUpperCase()).eq('active', true).single()
+    if (coupon) {
+       const isNotExpired = coupon.expiry_date ? new Date(coupon.expiry_date) > new Date() : true
+       const meetsMinimum = subtotal >= (coupon.min_purchase_amount || 0)
+       if (isNotExpired && meetsMinimum) {
+         discount = coupon.discount_type === 'PERCENTAGE' 
+           ? (subtotal * coupon.discount_value) / 100 
+           : coupon.discount_value
+         couponId = coupon.id
+         appliedDiscountText = coupon.code
+       }
+    }
+  }
+
+  const total = subtotal + shipping - discount
+
+  return {
+    subtotal,
+    shipping,
+    discount,
+    total: Math.max(0, total),
+    validatedItems,
+    couponId,
+    appliedDiscountText
+  }
+}
+
+// 2. Create Razorpay Order
+export async function createRazorpayOrderAction(items: CartInputItem[], shippingMethod: string, couponCode?: string) {
+  try {
+    const totals = await calculateOrderTotal(items, shippingMethod, couponCode)
+    const { razorpay, keyId } = await getRazorpayInstance()
+
+    const options = {
+      amount: Math.round(totals.total * 100), // convert to cents/paise
+      currency: "INR", // Updated to INR
+      receipt: `rcpt_${Date.now()}`
+    }
+
+    const order = await razorpay.orders.create(options)
+    
+    return {
+      success: true,
+      orderId: order.id,
+      amount: options.amount,
+      currency: options.currency,
+      keyId,
+      totals
+    }
+  } catch (error: any) {
+    console.error("Razorpay Error:", error)
+    const errorMsg = error.error?.description || error.message || JSON.stringify(error) || "Unknown Razorpay Error"
+    return { success: false, error: errorMsg }
+  }
+}
+
+// 3. Verify & Finalize Order (Razorpay)
+export async function verifyAndCreateOrder(
+  razorpayPaymentId: string,
+  razorpayOrderId: string,
+  razorpaySignature: string,
+  address: any,
+  items: CartInputItem[],
+  shippingMethod: string,
+  couponCode?: string
+) {
+  try {
+    const { keySecret } = await getRazorpayInstance()
+    
+    // Verify signature
+    const text = razorpayOrderId + "|" + razorpayPaymentId
+    const expectedSignature = crypto.createHmac("sha256", keySecret).update(text).digest("hex")
+
+    if (expectedSignature !== razorpaySignature) {
+      throw new Error("Invalid payment signature")
+    }
+
+    return await createFinalOrder(items, address, shippingMethod, 'PAID', 'RAZORPAY', razorpayOrderId, razorpayPaymentId, couponCode)
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+// 4. Create COD Order
+export async function createCODOrderAction(
+  address: any,
+  items: CartInputItem[],
+  shippingMethod: string,
+  couponCode?: string
+) {
+  try {
+    return await createFinalOrder(items, address, shippingMethod, 'PENDING', 'COD', null, null, couponCode)
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+// 5. Create Demo Order
+export async function createDemoOrderAction(
+  address: any,
+  items: CartInputItem[],
+  shippingMethod: string,
+  couponCode?: string
+) {
+  try {
+    return await createFinalOrder(items, address, shippingMethod, 'PAID', 'RAZORPAY', 'demo_order_' + Date.now(), 'demo_payment_' + Date.now(), couponCode)
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+// Internal function to create the actual order records and deduct stock
+async function createFinalOrder(
+  items: CartInputItem[], 
+  address: any, 
+  shippingMethod: string, 
+  paymentStatus: string, 
+  paymentMethod: string,
+  razorpayOrderId?: string | null,
+  razorpayPaymentId?: string | null,
+  couponCode?: string
+) {
+  const supabaseAdmin = await createAdminClient()
+  
+  // 1. Recalculate and validate again
+  const totals = await calculateOrderTotal(items, shippingMethod, couponCode)
+
+  // 2. Generate Order Number
+  const orderNumber = `SHAHI-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`
+
+  // 3. Auto-create or update customer profile
+  const fullName = `${address.firstName} ${address.lastName}`.trim()
+  const { data: existingProfile } = await supabaseAdmin
+    .from('customer_profiles')
+    .select('id')
+    .eq('email', address.email)
+    .single()
+
+  if (existingProfile) {
+    await supabaseAdmin.from('customer_profiles').update({
+      name: fullName,
+      phone: address.phone,
+      updated_at: new Date().toISOString()
+    }).eq('id', existingProfile.id)
+  } else {
+    await supabaseAdmin.from('customer_profiles').insert({
+      email: address.email,
+      name: fullName,
+      phone: address.phone
+    })
+  }
+
+  // 4. Insert Order (Flat schema)
+  const { data: order, error: orderError } = await supabaseAdmin.from('orders').insert({
+    order_number: orderNumber,
+    customer_name: fullName,
+    customer_email: address.email,
+    customer_phone: address.phone,
+    shipping_address: address.street,
+    city: address.city,
+    state: address.state,
+    postal_code: address.zip,
+    country: address.country || 'US',
+    total_amount: totals.total,
+    subtotal: totals.subtotal,
+    shipping_cost: totals.shipping,
+    discount_amount: totals.discount,
+    coupon_id: totals.couponId,
+    order_status: 'CONFIRMED',
+    payment_status: paymentStatus,
+    payment_method: paymentMethod,
+    razorpay_order_id: razorpayOrderId,
+    razorpay_payment_id: razorpayPaymentId,
+  }).select().single()
+
+  if (orderError) throw new Error("Failed to create order record: " + orderError.message)
+
+  // Insert initial timeline event
+  await supabaseAdmin.from('order_timeline').insert({
+    order_id: order.id,
+    event_type: 'Order Placed',
+    description: `Order successfully placed via ${paymentMethod}.`
+  })
+
+  // 5. Insert Order Items and Deduct Stock
+  for (const item of totals.validatedItems) {
+    await supabaseAdmin.from('order_items').insert({
+      order_id: order.id,
+      product_id: item.productId,
+      price: item.price,
+      quantity: item.quantity,
+    })
+
+    const { data: pData } = await supabaseAdmin.from('products').select('stock').eq('id', item.productId).single()
+    if (pData) await supabaseAdmin.from('products').update({ stock: pData.stock - item.quantity }).eq('id', item.productId)
+  }
+
+  // 6. Send Order Confirmation Email
+  try {
+    const fullAddress = `${address.street}, ${address.city}, ${address.state} ${address.zip}, ${address.country || 'IN'}`
+    await sendOrderConfirmationEmail(
+      address.email,
+      fullName,
+      orderNumber,
+      totals.validatedItems,
+      totals,
+      fullAddress
+    )
+  } catch (e) {
+    console.error("Failed to trigger order confirmation email", e)
+  }
+
+  return { success: true, orderId: order.id, orderNumber }
+}

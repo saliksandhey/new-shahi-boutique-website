@@ -1,0 +1,26 @@
+import { StorefrontWrapper } from "@/components/storefront/StorefrontWrapper";
+import { createClient } from "@/lib/supabase/server";
+import { getActiveAnnouncements } from "@/lib/actions/announcements";
+import { AnnouncementManager } from "@/components/storefront/AnnouncementManager";
+
+export default async function StorefrontLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const supabase = await createClient()
+  const { data: categories } = await supabase.from('categories').select('*')
+  
+  // Need to use the secure admin client or bypass RLS for reading announcements if RLS is strict. 
+  // Wait, I created a public read policy on announcements! So this will work fine.
+  const announcements = await getActiveAnnouncements()
+
+  return (
+    <>
+      <AnnouncementManager announcements={announcements || []} />
+      <StorefrontWrapper categories={categories || []}>
+        {children}
+      </StorefrontWrapper>
+    </>
+  );
+}
