@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export function PotliShowcase() {
   return (
-    <section className="py-16 md:py-24 bg-white overflow-hidden">
+    <section className="py-10 md:py-16 bg-white overflow-hidden">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
         <div className="text-center md:text-left mb-10 md:mb-16">
           <h2 className="text-3xl md:text-5xl font-sans font-black text-gray-900 mb-3 tracking-tighter uppercase">
@@ -38,10 +38,12 @@ export function PotliShowcase() {
             
             {/* Top Image */}
             <div className="flex-1 rounded-[2rem] overflow-hidden relative group">
-              <img 
+              <Image 
                 src="/media/potli_image_1.jpeg" 
-                alt="Luxury Potli Detail"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                alt="Handcrafted Potli Purses" 
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-1000 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                 <span className="text-white font-bold uppercase tracking-widest text-xs">Exquisite Detailing</span>

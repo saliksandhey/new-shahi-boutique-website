@@ -71,7 +71,6 @@ export function CartDrawer() {
                       alt={item.name} 
                       fill 
                       className="object-cover"
-                      unoptimized
                     />
                   </div>
                   <div className="flex flex-1 flex-col justify-between py-1">

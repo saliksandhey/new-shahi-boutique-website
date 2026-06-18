@@ -52,9 +52,8 @@ export function InstagramGallery() {
                   src={src}
                   alt={`Instagram Post ${i + 1}`}
                   fill
-                  className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes={isLarge ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 25vw, 50vw"}
-                  unoptimized
                 />
                 
                 {/* Overlay & Icon */}

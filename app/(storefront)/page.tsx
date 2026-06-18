@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/server'
 import { HeroLuxury } from '@/components/storefront/HeroLuxury'
 import { FeaturedCollection } from '@/components/storefront/FeaturedCollection'
 import { ProductCard } from '@/components/storefront/ProductCard'
@@ -7,15 +7,16 @@ import { WorldwideDelivery } from '@/components/storefront/WorldwideDelivery'
 import { CustomerReviews } from '@/components/storefront/CustomerReviews'
 import { PotliShowcase } from '@/components/storefront/PotliShowcase'
 import { Newsletter } from '@/components/storefront/Newsletter'
+import { SplashScreen } from '@/components/storefront/SplashScreen'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function HomePage() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   // Fetch 10 products (2 for New Arrivals, 8 for Featured)
   const { data: recentProducts } = await supabase.from('products')
-    .select('*, product_images(url, is_primary)')
+    .select('*, product_images(url, is_primary), categories(name)')
     .eq('status', 'ACTIVE')
     .order('created_at', { ascending: false })
     .limit(10)
@@ -25,12 +26,13 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col w-full">
+      <SplashScreen />
       
       {/* Section 3: Hero Section */}
       <HeroLuxury />
 
       {/* Section 4: New Arrivals (4 products, grid on mobile) */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-10 md:py-16 bg-white">
         <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
           <div className="text-center md:text-left mb-10 md:mb-16">
             <h2 className="text-3xl md:text-5xl font-sans font-black text-gray-900 mb-3 tracking-tighter uppercase">
@@ -41,11 +43,10 @@ export default async function HomePage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto">
-            {newArrivals.map((product) => (
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:gap-8 max-w-[1400px] mx-auto">
+            {newArrivals.slice(0, 2).map((product) => (
               <div key={product.id}>
-                {/* We import ProductCard dynamically or just use it if we import it at the top */}
-                <ProductCard product={product} />
+                <ProductCard product={product} variant="horizontal" />
               </div>
             ))}
           </div>

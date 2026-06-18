@@ -1,15 +1,17 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/server'
 import { ProductGrid } from '@/components/storefront/ProductGrid'
 import { SearchBar } from '@/components/storefront/SearchBar'
+
+export const revalidate = 60
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: { q?: string }
 }) {
   const params = await searchParams;
-  const q = typeof params.q === 'string' ? params.q : ''
-  const supabase = await createClient()
+  const q = params.q || ''
+  const supabase = createPublicClient()
 
   let products: any[] = []
   

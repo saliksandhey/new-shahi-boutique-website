@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 export function WorldwideDelivery() {
   const countries = [
@@ -22,7 +23,7 @@ export function WorldwideDelivery() {
   const marqueeItems = [...countries, ...countries]
 
   return (
-    <section className="py-24 bg-white overflow-hidden relative">
+    <section className="py-12 md:py-20 bg-white overflow-hidden relative">
       <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         
         <div className="text-center mb-10 md:mb-16 relative z-10">
@@ -51,11 +52,12 @@ export function WorldwideDelivery() {
                 className="flex-shrink-0 w-36 h-32 md:w-48 md:h-40 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center p-6 hover:shadow-md transition-shadow duration-300"
               >
                 <div className="relative w-12 h-12 md:w-16 md:h-16 mb-3 rounded-full overflow-hidden shadow-sm border border-black/5">
-                  <img 
+                  <Image 
                     src={`https://flagcdn.com/${country.code}.svg`} 
                     alt={`${country.name} Flag`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    fill
+                    sizes="(max-width: 768px) 48px, 64px"
+                    className="object-cover"
                   />
                 </div>
                 <span className="text-xs md:text-sm font-bold text-gray-900 text-center whitespace-normal leading-tight tracking-wide">

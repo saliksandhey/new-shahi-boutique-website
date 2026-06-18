@@ -1,9 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/server'
 import { ProductGrid } from '@/components/storefront/ProductGrid'
 import { FilterSidebar } from '@/components/storefront/FilterSidebar'
 import { SortSelect } from '@/components/storefront/SortSelect'
 import { Pagination } from '@/components/storefront/Pagination'
 import { notFound } from 'next/navigation'
+
+export const revalidate = 60
 
 export default async function CategoryPage({
   params,
@@ -14,7 +16,7 @@ export default async function CategoryPage({
 }) {
   const { slug } = await params;
   const sParams = await searchParams;
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: category } = await supabase.from('categories').select('*').eq('slug', slug).single()
 
@@ -29,7 +31,7 @@ export default async function CategoryPage({
   const to = from + limit - 1
 
   let query = supabase.from('products')
-    .select('*, product_images(url, is_primary)', { count: 'exact' })
+    .select('*, product_images(url, is_primary), categories(name)', { count: 'exact' })
     .eq('status', 'ACTIVE')
     .eq('category_id', category.id)
 

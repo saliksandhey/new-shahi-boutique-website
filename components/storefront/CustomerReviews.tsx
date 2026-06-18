@@ -82,7 +82,7 @@ export function CustomerReviews() {
   }, [])
 
   return (
-    <section className="py-24 bg-[#F8F9FA] relative overflow-hidden">
+    <section className="py-12 md:py-20 bg-[#F8F9FA] relative overflow-hidden">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
         
         <div className="text-center mb-10 md:mb-16 relative z-10">

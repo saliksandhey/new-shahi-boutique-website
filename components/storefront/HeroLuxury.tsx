@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 
 export function HeroLuxury() {
@@ -53,10 +54,13 @@ export function HeroLuxury() {
               {/* Subtle inner gradient overlay for luxury depth */}
               <div className="absolute inset-0 bg-gradient-to-tr from-black/30 via-transparent to-white/10 z-10 pointer-events-none transition-opacity duration-1000 group-hover:opacity-75 mix-blend-overlay"></div>
               
-              <img 
+              <Image 
                 src="/Hero_sec.jpeg" 
                 alt="Shahi Boutique" 
-                className="w-full h-full object-cover object-center transition-transform duration-[2000ms] ease-out group-hover:scale-[1.08]"
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover object-center transition-transform duration-[2000ms] ease-out group-hover:scale-[1.08]"
               />
 
               {/* Luxury Badge overlay */}

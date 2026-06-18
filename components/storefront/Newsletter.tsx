@@ -2,8 +2,8 @@
 
 export function Newsletter() {
   return (
-    <section className="py-24 bg-[#F8F9FA] px-6 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-[1400px] relative py-20 md:py-24 px-8 overflow-hidden bg-[#1C1C1C] rounded-[2.5rem] shadow-2xl">
+    <section className="py-10 md:py-16 bg-[#F8F9FA] px-6 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-[1400px] relative py-12 md:py-20 px-8 overflow-hidden bg-[#1C1C1C] rounded-[2.5rem] shadow-2xl">
         
         {/* Subtle Background Accent */}
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#FF7A00] rounded-full mix-blend-multiply filter blur-[120px] opacity-40 pointer-events-none" />

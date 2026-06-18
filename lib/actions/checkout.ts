@@ -5,6 +5,12 @@ import { getRazorpayInstance } from '@/lib/razorpay'
 import crypto from 'crypto'
 import { sendOrderConfirmationEmail } from '@/lib/actions/emails'
 
+export async function getPublicCoupons() {
+  const supabase = await createAdminClient()
+  const { data } = await supabase.from('coupons').select('*').eq('active', true).eq('is_public', true)
+  return data || []
+}
+
 export type CartInputItem = {
   productId: string
   quantity: number
@@ -49,7 +55,7 @@ export async function calculateOrderTotal(items: CartInputItem[], shippingMethod
     const { data: coupon } = await supabase.from('coupons').select('*').eq('code', couponCode.toUpperCase()).eq('active', true).single()
     if (coupon) {
        const isNotExpired = coupon.expiry_date ? new Date(coupon.expiry_date) > new Date() : true
-       const meetsMinimum = subtotal >= (coupon.min_purchase_amount || 0)
+       const meetsMinimum = subtotal >= (coupon.min_order_amount || 0)
        if (isNotExpired && meetsMinimum) {
          discount = coupon.discount_type === 'PERCENTAGE' 
            ? (subtotal * coupon.discount_value) / 100 
@@ -69,7 +75,9 @@ export async function calculateOrderTotal(items: CartInputItem[], shippingMethod
     total: Math.max(0, total),
     validatedItems,
     couponId,
-    appliedDiscountText
+    appliedDiscountText,
+    couponApplied: !!couponId,
+    isFreeGift: couponId && discount === 0 // If it's applied but discount is 0, it's a free gift
   }
 }
 

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/server'
 import { ProductGrid } from '@/components/storefront/ProductGrid'
 import { FilterSidebar } from '@/components/storefront/FilterSidebar'
 import { SortSelect } from '@/components/storefront/SortSelect'
 import { Pagination } from '@/components/storefront/Pagination'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function ShopPage({
   searchParams,
@@ -12,7 +12,7 @@ export default async function ShopPage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   const params = await searchParams;
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const sort = typeof params.sort === 'string' ? params.sort : 'newest'
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1
@@ -20,7 +20,7 @@ export default async function ShopPage({
   const from = (page - 1) * limit
   const to = from + limit - 1
 
-  let query = supabase.from('products').select('*, product_images(url, is_primary)', { count: 'exact' }).eq('status', 'ACTIVE')
+  let query = supabase.from('products').select('*, product_images(url, is_primary), categories(name)', { count: 'exact' }).eq('status', 'ACTIVE')
 
   if (sort === 'price-asc') {
     query = query.order('price', { ascending: true })

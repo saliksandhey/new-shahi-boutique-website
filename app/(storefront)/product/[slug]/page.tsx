@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { ProductGallery } from '@/components/storefront/ProductGallery'
 import { AddToCart } from '@/components/storefront/AddToCart'
@@ -6,9 +6,9 @@ import { ProductGrid } from '@/components/storefront/ProductGrid'
 import { ReviewCarousel } from '@/components/storefront/ReviewCarousel'
 import type { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = await params;
-  const supabase = await createClient()
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = createPublicClient()
   const { data: product } = await supabase.from('products').select('name, description, meta_title, meta_description, keywords, canonical_url, og_image').eq('slug', slug).single()
   
   if (!product) return {}
@@ -28,9 +28,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params;
-  const supabase = await createClient()
+export const revalidate = 60
+
+export default async function ProductPage({ params }: any) {
+  const { slug } = await params
+  const supabase = createPublicClient()
 
   const { data: product } = await supabase
     .from('products')
@@ -84,7 +86,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-16 xl:gap-x-24">
           
           {/* Image Gallery */}
-          <div className="flex flex-col-reverse">
+          <div className="flex flex-col-reverse lg:sticky lg:top-32">
             <ProductGallery images={sortedImages} />
           </div>
 

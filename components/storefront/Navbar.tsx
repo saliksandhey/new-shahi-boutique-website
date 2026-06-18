@@ -117,13 +117,21 @@ export function Navbar({ categories }: { categories: any[] }) {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative flex w-full max-w-sm flex-col overflow-y-auto bg-white pb-12 shadow-2xl animate-in slide-in-from-left duration-300">
-            <div className="flex px-6 pb-4 pt-6 justify-between items-center border-b-2 border-black">
-              <span className="font-heading text-2xl tracking-tight font-bold text-black uppercase">SHAHI</span>
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" onClick={() => setMobileMenuOpen(false)} />
+          
+          {/* Menu Panel */}
+          <div className="relative flex w-full max-w-[85%] sm:max-w-sm flex-col overflow-y-auto bg-[#111111]/95 backdrop-blur-xl border-r border-white/10 pb-12 shadow-[20px_0_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-left duration-500 ease-out">
+            
+            {/* Header */}
+            <div className="flex px-6 pb-6 pt-8 justify-between items-center border-b border-white/10 relative">
+              <span className="font-heading text-2xl tracking-tight font-black text-white uppercase relative z-10">
+                SHAHI
+                <span className="absolute -bottom-2 left-0 w-8 h-1 bg-[#FF7A00]"></span>
+              </span>
               <button
                 type="button"
-                className="-m-2 inline-flex items-center justify-center p-2 text-black hover:text-[#FF7A00]"
+                className="-m-2 inline-flex items-center justify-center p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <span className="sr-only">Close menu</span>
@@ -131,13 +139,38 @@ export function Navbar({ categories }: { categories: any[] }) {
               </button>
             </div>
 
-            <div className="space-y-6 px-6 py-8">
-              <Link href="/" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-              <Link href="/shop" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
-              <Link href="/shop?collection=new" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>New Arrivals</Link>
-              <Link href="/track-order" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>Track Order</Link>
-              <Link href="/stores" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>Our Stores</Link>
-              <Link href="/academy" className="block text-xl font-heading text-black uppercase tracking-wider border-b-2 border-black/10 pb-4 hover:text-[#FF7A00] transition-colors" onClick={() => setMobileMenuOpen(false)}>Academy</Link>
+            {/* Navigation Links */}
+            <div className="flex-1 px-6 py-8 flex flex-col gap-6">
+              {[
+                { name: 'Home', href: '/' },
+                { name: 'Shop', href: '/shop' },
+                { name: 'New Arrivals', href: '/shop?collection=new' },
+                { name: 'Track Order', href: '/track-order' },
+                { name: 'Our Stores', href: '/stores' },
+                { name: 'Academy', href: '/academy' },
+              ].map((link, index) => (
+                <Link 
+                  key={link.name}
+                  href={link.href} 
+                  className="group flex items-center justify-between text-xl font-heading text-gray-300 uppercase tracking-widest border-b border-white/5 pb-4 hover:text-[#D4AF37] hover:border-[#D4AF37]/50 transition-all duration-300" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <span className="transform group-hover:translate-x-2 transition-transform duration-300">{link.name}</span>
+                  <ChevronDown className="w-5 h-5 -rotate-90 opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300 text-[#D4AF37]" />
+                </Link>
+              ))}
+            </div>
+            
+            {/* Footer Area */}
+            <div className="mt-auto px-6 pt-8 border-t border-white/10">
+              <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">Need Help?</p>
+              <a href="mailto:contact.shahiboutique@gmail.com" className="text-sm text-gray-300 hover:text-[#D4AF37] transition-colors block mb-2">
+                contact.shahiboutique@gmail.com
+              </a>
+              <a href="tel:+919217890060" className="text-sm text-gray-300 hover:text-[#D4AF37] transition-colors block">
+                +91 9217890060
+              </a>
             </div>
           </div>
         </div>

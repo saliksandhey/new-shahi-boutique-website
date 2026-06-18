@@ -97,9 +97,29 @@ export function Footer({ categories }: { categories: any[] }) {
           <div className="flex flex-col sm:flex-row items-center gap-6 order-2">
             {/* Payment Icons */}
             <div className="flex items-center justify-center gap-4">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1200px-Mastercard-logo.svg.png" alt="Mastercard" className="h-6 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1200px-Visa_Inc._logo.svg.png" alt="Visa" className="h-4 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/1200px-PayPal.svg.png" alt="PayPal" className="h-5 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
+              {/* UPI */}
+              <svg viewBox="0 0 512 512" className="h-4 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300" fill="currentColor">
+                <path d="M410.5 45.5H101.5C70.6 45.5 45.5 70.6 45.5 101.5v309c0 30.9 25.1 56 56 56h309c30.9 0 56-25.1 56-56v-309c0-30.9-25.1-56-56-56zm-175.7 348.6L164 324h35.8v-77h70.8v77h35.8l-71.6 70.1zM294 213h-44.5V108.6H294c30.9 0 56 25.1 56 56s-25.1 48.4-56 48.4zm-14.7-29.2h29.2c16.1 0 29.2-13.1 29.2-29.2s-13.1-29.2-29.2-29.2h-29.2v58.4z" />
+              </svg>
+              {/* Mastercard */}
+              <svg viewBox="0 0 38 24" className="h-5 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <path d="M12 24C18.627 24 24 18.627 24 12C24 5.373 18.627 0 12 0C5.373 0 0 5.373 0 12C0 18.627 5.373 24 12 24Z" fill="#EB001B"/>
+                <path d="M26 24C32.627 24 38 18.627 38 12C38 5.373 32.627 0 26 0C19.373 0 14 5.373 14 12C14 18.627 19.373 24 26 24Z" fill="#F79E1B"/>
+                <path d="M24 12C24 15.65 22.37 18.914 19.5 21.056C16.63 18.914 15 15.65 15 12C15 8.35 16.63 5.086 19.5 2.944C22.37 5.086 24 8.35 24 12Z" fill="#FF5F00"/>
+              </svg>
+              {/* Visa */}
+              <svg viewBox="0 0 38 24" className="h-3.5 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <path d="M13.623 20.378h3.336l3.14-14.283H16.76l-2.174 10.66-.46-2.183-1.637-7.857a.897.897 0 0 0-.85-.62h-5.23l-.066.31c1.077.275 2.296.69 3.033 1.144.225.138.288.262.366.526l2.973 12.303h3.415V20.378h-.469z" fill="#1434CB"/>
+                <path d="M29.566 6.095h-2.585c-.534 0-.936.15-1.173.693l-4.593 11.08h3.518l.702-1.956h4.3l.407 1.956h3.09l-3.666-11.773zm-3.056 6.945l1.092-2.986 1.488-4.108.674 3.237.585 2.766-.184.148-3.655.943v-.002z" fill="#1434CB"/>
+                <path d="M8.79 6.095H4.21C3.843 6.095 3.514 6.28 3.376 6.61L.034 20.377h3.425l.685-1.895h4.19l.397 1.896h3.013L8.79 6.095zm-2.984 6.726l1.066-2.895 1.45-3.98h.04l.658 3.136.57 2.7-.18.14-3.604.9z" fill="#1434CB"/>
+                <path d="M34.704 6.095c-1.32-.34-3.535-.618-5.32-.618-2.673 0-4.558 1.433-4.57 3.493-.016 1.523 1.348 2.373 2.37 2.88 1.047.518 1.402.85 1.402 1.312 0 .71-.84 1.04-1.616 1.04-1.353 0-2.078-.198-3.19-.696l-.45-.213-.482 3.036c.792.365 2.25.684 3.77.697 2.85 0 4.704-1.42 4.72-3.633.016-1.22-.72-2.146-2.274-2.898-.946-.492-1.527-.82-1.527-1.32 0-.613.673-1.252 1.554-1.252 1.085-.015 1.868.256 2.477.536l.295.14.478-2.51v-.004z" fill="#1434CB"/>
+              </svg>
+              {/* PayPal */}
+              <svg viewBox="0 0 38 24" className="h-5 w-auto grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <path d="M14.07 19.34l-1.37 8.66h3.69c.28 0 .52-.22.56-.5l.98-6.17.06-.32.06-.38c.04-.28.28-.5.56-.5h1.61c3.55 0 5.6-1.74 6.22-5.06.27-1.46.12-2.73-.39-3.7-.87-1.64-2.76-2.38-5.46-2.38H15.1c-.28 0-.52.22-.56.5l-.47 2.96v.01l-.98 6.17-.02.13v.58z" fill="#003087"/>
+                <path d="M13.62 20.18l-.51 3.22h-3.6l1.83-11.58c.04-.28.28-.5.56-.5h5.48c2.19 0 3.76.57 4.58 1.63.45.58.74 1.33.8 2.22H17.4c-.9 0-1.68.65-1.8 1.53l-1.12 7.07-.86 5.41h3.62l.86-5.41c.04-.28.28-.5.56-.5h1.61c.45 0 .86-.03 1.25-.09-1.2 1.6-3.4 2.27-6.04 2.27H14.1c-.28 0-.52-.22-.56-.5l.08-.43v-.01z" fill="#0079C1"/>
+                <path d="M18.8 8.94H13.6l1.37-8.66C15.01.22 15.25 0 15.53 0h5.48c2.81 0 4.81.82 5.76 2.6.51.97.66 2.24.39 3.7-.62 3.32-2.67 5.06-6.22 5.06H19.33c-.28 0-.52-.22-.56-.5l.03-.18v-1.74z" fill="#00457C"/>
+              </svg>
             </div>
             
             {/* Trust Badges */}

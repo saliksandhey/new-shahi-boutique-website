@@ -24,7 +24,7 @@ export function FeaturedCollection({ products }: { products: any[] }) {
   }
 
   return (
-    <section className="py-24 bg-white relative group/section">
+    <section className="py-12 md:py-20 bg-white relative group/section">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12 relative">
         
         {/* Header Section */}
@@ -71,7 +71,7 @@ export function FeaturedCollection({ products }: { products: any[] }) {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {featured.map((product) => (
-            <div key={product.id} className="min-w-[75vw] sm:min-w-[320px] lg:min-w-[350px] shrink-0 snap-start">
+            <div key={product.id} className="min-w-[50vw] sm:min-w-[320px] lg:min-w-[350px] shrink-0 snap-start">
               <ProductCard product={product} />
             </div>
           ))}

@@ -8,9 +8,11 @@ import { z } from 'zod'
 const couponSchema = z.object({
   code: z.string().min(1, "Code is required").toUpperCase(),
   discount_type: z.enum(['PERCENTAGE', 'FIXED']),
-  discount_value: z.coerce.number().min(0.01),
+  discount_value: z.coerce.number().min(0),
+  min_order_amount: z.coerce.number().min(0).default(0),
   expiry_date: z.string().optional().nullable(),
-  active: z.boolean().default(true)
+  active: z.boolean().default(true),
+  is_public: z.boolean().default(false)
 })
 
 export async function createCoupon(formData: FormData) {
@@ -20,8 +22,10 @@ export async function createCoupon(formData: FormData) {
     code: formData.get('code'),
     discount_type: formData.get('discount_type'),
     discount_value: formData.get('discount_value'),
+    min_order_amount: formData.get('min_order_amount') || 0,
     expiry_date: formData.get('expiry_date') || null,
-    active: formData.get('active') === 'on' || formData.get('active') === 'true'
+    active: formData.get('active') === 'on' || formData.get('active') === 'true',
+    is_public: formData.get('is_public') === 'on' || formData.get('is_public') === 'true'
   }
 
   const validated = couponSchema.safeParse(rawData)
@@ -46,8 +50,10 @@ export async function updateCoupon(id: string, formData: FormData) {
     code: formData.get('code'),
     discount_type: formData.get('discount_type'),
     discount_value: formData.get('discount_value'),
+    min_order_amount: formData.get('min_order_amount') || 0,
     expiry_date: formData.get('expiry_date') || null,
-    active: formData.get('active') === 'on' || formData.get('active') === 'true'
+    active: formData.get('active') === 'on' || formData.get('active') === 'true',
+    is_public: formData.get('is_public') === 'on' || formData.get('is_public') === 'true'
   }
 
   const validated = couponSchema.safeParse(rawData)

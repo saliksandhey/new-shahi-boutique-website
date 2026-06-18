@@ -25,7 +25,7 @@ export function WhyChooseUs() {
   ]
 
   return (
-    <section className="py-24 bg-[#F8F9FA] px-6 sm:px-8 lg:px-12">
+    <section className="py-12 md:py-20 bg-[#F8F9FA] px-6 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-[1400px]">
         
         <div className="text-center mb-10 md:mb-16">

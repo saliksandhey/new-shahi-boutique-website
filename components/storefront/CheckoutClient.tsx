@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/store/cart-store'
 import { useRouter } from 'next/navigation'
-import { calculateOrderTotal, createRazorpayOrderAction, verifyAndCreateOrder, createCODOrderAction } from '@/lib/actions/checkout'
+import { calculateOrderTotal, createRazorpayOrderAction, verifyAndCreateOrder, createCODOrderAction, getPublicCoupons } from '@/lib/actions/checkout'
 import Script from 'next/script'
+import { Ticket, X, Gift } from 'lucide-react'
 
 export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: boolean, razorpayKeyId: string }) {
   const { items, clearCart } = useCartStore()
@@ -19,18 +20,23 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
   const [address, setAddress] = useState({
     firstName: '', lastName: '', email: '', phone: '', street: '', city: '', state: '', zip: '', country: 'US'
   })
-  const [shippingMethod, setShippingMethod] = useState('standard') // standard | express
+  const [shippingMethod, setShippingMethod] = useState('standard') // only standard now
   const [paymentMethod, setPaymentMethod] = useState('razorpay') // razorpay | cod
   const [couponCode, setCouponCode] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number} | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string, discount: number, isFreeGift?: boolean} | null>(null)
 
   // Live Totals (fetched from server)
   const [totals, setTotals] = useState({ subtotal: 0, shipping: 0, discount: 0, total: 0 })
+  
+  // Public Coupons
+  const [publicCoupons, setPublicCoupons] = useState<any[]>([])
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
     if (items.length > 0) {
       updateTotals()
+      getPublicCoupons().then(coupons => setPublicCoupons(coupons))
     } else {
       router.push('/')
     }
@@ -60,16 +66,24 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
 
   if (!mounted || items.length === 0) return null
 
-  const handleApplyCoupon = async () => {
+  const handleApplyCoupon = async (codeToApply?: string) => {
     setError(null)
+    const code = codeToApply || couponCode
     try {
       const inputItems = items.map(i => ({ productId: i.productId, quantity: i.quantity }))
-      const result = await calculateOrderTotal(inputItems, shippingMethod, couponCode)
-      if (result.discount > 0) {
-        setAppliedCoupon({ code: couponCode, discount: result.discount })
+      const result = await calculateOrderTotal(inputItems, shippingMethod, code)
+      if (result.couponApplied) {
+        setAppliedCoupon({ code: code, discount: result.discount, isFreeGift: result.isFreeGift })
         setTotals({ subtotal: result.subtotal, shipping: result.shipping, discount: result.discount, total: result.total })
+        if (codeToApply) setCouponCode(codeToApply)
       } else {
-        setError('Invalid or expired coupon')
+        // Find if this was a public coupon failing the min amount
+        const pc = publicCoupons.find(c => c.code === code)
+        if (pc && totals.subtotal < pc.min_order_amount) {
+          setError(`Add ₹${(pc.min_order_amount - totals.subtotal).toFixed(2)} more to unlock this coupon`)
+        } else {
+          setError('Invalid or expired coupon')
+        }
         setAppliedCoupon(null)
       }
     } catch (e: any) {
@@ -181,17 +195,26 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input type="text" placeholder="First Name" value={address.firstName} onChange={e => setAddress({...address, firstName: e.target.value})} className={inputClasses} />
                   <input type="text" placeholder="Last Name" value={address.lastName} onChange={e => setAddress({...address, lastName: e.target.value})} className={inputClasses} />
-                  <input type="email" placeholder="Email Address" value={address.email} onChange={e => setAddress({...address, email: e.target.value})} className={`${inputClasses} sm:col-span-2`} />
+                  
+                  <div className="sm:col-span-2">
+                    <input type="email" placeholder="Email Address" value={address.email} onChange={e => setAddress({...address, email: e.target.value})} className={`${inputClasses} ${address.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email) ? 'border-red-500 focus:border-red-500' : ''}`} />
+                    {address.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email) && <p className="text-[10px] text-red-500 font-bold mt-2 ml-4 uppercase tracking-widest">Valid email required</p>}
+                  </div>
+                  
                   <input type="text" placeholder="Street Address" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} className={`${inputClasses} sm:col-span-2`} />
                   <input type="text" placeholder="City" value={address.city} onChange={e => setAddress({...address, city: e.target.value})} className={inputClasses} />
                   <input type="text" placeholder="State/Province" value={address.state} onChange={e => setAddress({...address, state: e.target.value})} className={inputClasses} />
                   <input type="text" placeholder="Zip / Postal Code" value={address.zip} onChange={e => setAddress({...address, zip: e.target.value})} className={inputClasses} />
-                  <input type="text" placeholder="Phone Number" value={address.phone} onChange={e => setAddress({...address, phone: e.target.value})} className={inputClasses} />
+                  
+                  <div>
+                    <input type="tel" placeholder="10-digit Phone Number" maxLength={10} value={address.phone} onChange={e => setAddress({...address, phone: e.target.value.replace(/\D/g, '')})} className={`${inputClasses} ${address.phone && address.phone.length !== 10 ? 'border-red-500 focus:border-red-500' : ''}`} />
+                    {address.phone && address.phone.length !== 10 && <p className="text-[10px] text-red-500 font-bold mt-2 ml-4 uppercase tracking-widest">Must be 10 digits</p>}
+                  </div>
                   
                   <div className="sm:col-span-2 mt-4">
                     <button 
                       onClick={() => setStep(2)}
-                      disabled={!address.firstName || !address.lastName || !address.email || !address.street || !address.city || !address.state || !address.zip || !address.phone}
+                      disabled={!address.firstName || !address.lastName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email) || !address.street || !address.city || !address.state || !address.zip || address.phone.length !== 10}
                       className="w-full rounded-full bg-[#1C1C1C] text-white py-5 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 disabled:bg-gray-200 disabled:text-gray-400 shadow-md"
                     >
                       Continue to Delivery
@@ -202,6 +225,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                 <div className="text-sm text-gray-500 pl-12">
                   <p className="font-bold text-gray-900">{address.firstName} {address.lastName}</p>
                   <p className="font-medium mt-1">{address.street}, {address.city}, {address.state} {address.zip}</p>
+                  <p className="font-medium mt-1">{address.email} | +91 {address.phone}</p>
                   <button onClick={() => setStep(1)} className="text-[10px] font-bold uppercase tracking-widest text-[#FF7A00] hover:text-[#1C1C1C] transition-colors mt-4">Edit Address</button>
                 </div>
               )}
@@ -215,26 +239,15 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
               </h2>
               {step === 2 ? (
                 <div className="space-y-4 pl-0 md:pl-12">
-                  <label className={`flex items-center justify-between p-4 md:p-6 rounded-2xl cursor-pointer transition-all duration-300 ${shippingMethod === 'standard' ? 'border-2 border-[#FF7A00] bg-white ring-4 ring-[#FF7A00]/10' : 'border border-gray-200 bg-white hover:border-gray-300'}`}>
+                  <label className="flex items-center justify-between p-4 md:p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 border-[#FF7A00] bg-white ring-4 ring-[#FF7A00]/10">
                     <div className="flex items-center">
-                      <input type="radio" name="shipping" value="standard" checked={shippingMethod === 'standard'} onChange={() => setShippingMethod('standard')} className="h-5 w-5 text-[#FF7A00] focus:ring-[#FF7A00] border-gray-300 bg-transparent" />
+                      <div className="w-5 h-5 rounded-full border-[5px] border-[#FF7A00] bg-white"></div>
                       <div className="ml-4">
                         <span className="block text-sm font-bold text-gray-900 uppercase tracking-widest">Standard Shipping</span>
-                        <span className="block text-xs text-gray-500 font-medium mt-1">3-5 business days</span>
+                        <span className="block text-xs text-gray-500 font-medium mt-1">4-6 business days</span>
                       </div>
                     </div>
                     <span className="text-sm font-black text-gray-900 tracking-wide">{totals.subtotal > 150 ? 'FREE' : '₹10.00'}</span>
-                  </label>
-                  
-                  <label className={`flex items-center justify-between p-4 md:p-6 rounded-2xl cursor-pointer transition-all duration-300 ${shippingMethod === 'express' ? 'border-2 border-[#FF7A00] bg-white ring-4 ring-[#FF7A00]/10' : 'border border-gray-200 bg-white hover:border-gray-300'}`}>
-                    <div className="flex items-center">
-                      <input type="radio" name="shipping" value="express" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} className="h-5 w-5 text-[#FF7A00] focus:ring-[#FF7A00] border-gray-300 bg-transparent" />
-                      <div className="ml-4">
-                        <span className="block text-sm font-bold text-gray-900 uppercase tracking-widest">Express Shipping</span>
-                        <span className="block text-xs text-gray-500 font-medium mt-1">1-2 business days</span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-black text-gray-900 tracking-wide">₹25.00</span>
                   </label>
                   
                   <div className="mt-6">
@@ -248,8 +261,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                 </div>
               ) : step > 2 ? (
                 <div className="text-sm text-gray-500 pl-12 flex justify-between items-center">
-                  <p className="font-bold text-gray-900">{shippingMethod === 'standard' ? 'Standard Shipping (3-5 days)' : 'Express Shipping (1-2 days)'}</p>
-                  <button onClick={() => setStep(2)} className="text-[10px] font-bold uppercase tracking-widest text-[#FF7A00] hover:text-[#1C1C1C] transition-colors">Edit</button>
+                  <p className="font-bold text-gray-900">Standard Shipping (4-6 days)</p>
                 </div>
               ) : null}
             </div>
@@ -264,22 +276,41 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                 <div className="space-y-8 md:space-y-10 pl-0 md:pl-12">
                   
                   {/* Coupon section */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input 
-                      type="text" 
-                      placeholder="Gift card or discount code" 
-                      value={couponCode} 
-                      onChange={e => setCouponCode(e.target.value)} 
-                      disabled={!!appliedCoupon}
-                      className="flex-1 bg-white border border-gray-200 focus:border-[#FF7A00] focus:ring-0 rounded-full py-4 px-6 text-sm font-bold text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 placeholder:font-medium disabled:opacity-50 uppercase placeholder:normal-case" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); updateTotals(shippingMethod, undefined) } : handleApplyCoupon}
-                      className="bg-[#1C1C1C] text-white rounded-full px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-sm whitespace-nowrap"
-                    >
-                      {appliedCoupon ? 'Remove' : 'Apply'}
-                    </button>
+                  <div className="space-y-6 border-b border-gray-100 pb-8">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input 
+                        type="text" 
+                        placeholder="Gift card or discount code" 
+                        value={couponCode} 
+                        onChange={e => setCouponCode(e.target.value)} 
+                        disabled={!!appliedCoupon}
+                        className="flex-1 bg-white border border-gray-200 focus:border-[#FF7A00] focus:ring-0 rounded-full py-4 px-6 text-sm font-bold text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 placeholder:font-medium disabled:opacity-50 uppercase placeholder:normal-case" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); updateTotals(shippingMethod, undefined) } : () => handleApplyCoupon()}
+                        className="bg-[#1C1C1C] text-white rounded-full px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-sm whitespace-nowrap"
+                      >
+                        {appliedCoupon ? 'Remove' : 'Apply'}
+                      </button>
+                    </div>
+
+                    {/* Available Public Coupons Button */}
+                    {publicCoupons.length > 0 && !appliedCoupon && (
+                      <button 
+                        type="button" 
+                        onClick={() => setIsCouponModalOpen(true)}
+                        className="mt-4 flex items-center justify-between w-full p-4 border border-[#FF7A00]/30 bg-[#FF7A00]/5 rounded-2xl hover:bg-[#FF7A00]/10 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Ticket className="w-5 h-5 text-[#FF7A00] group-hover:scale-110 transition-transform" />
+                          <span className="text-xs font-bold uppercase tracking-widest text-gray-900">View Available Offers</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#FF7A00] uppercase tracking-widest bg-white px-3 py-1 rounded-full shadow-sm">
+                          {publicCoupons.length} Offers
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Payment Methods */}
@@ -343,6 +374,25 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                   </div>
                 </li>
               ))}
+              {appliedCoupon?.isFreeGift && (
+                <li className="flex py-6 border-t border-dashed border-[#D4AF37]/30 mt-2">
+                  <div className="flex-shrink-0 relative w-20 h-28 bg-[#D4AF37]/10 flex items-center justify-center overflow-hidden rounded-xl shadow-sm border border-[#D4AF37]/30">
+                    <Gift className="w-8 h-8 text-[#D4AF37]" />
+                    <span className="absolute top-2 right-2 bg-[#D4AF37] text-white rounded-full text-[10px] w-6 h-6 flex items-center justify-center font-bold shadow-md">
+                      1
+                    </span>
+                  </div>
+                  <div className="ml-6 flex flex-1 flex-col justify-center">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">Surprise Free Gift</p>
+                        <p className="text-[9px] text-[#D4AF37] font-black mt-2 uppercase tracking-widest bg-[#D4AF37]/10 inline-block px-2 py-1 rounded">Unlocked Offer</p>
+                      </div>
+                      <p className="text-sm font-black text-[#D4AF37] tracking-wide">FREE</p>
+                    </div>
+                  </div>
+                </li>
+              )}
             </ul>
 
             <dl className="space-y-6 text-sm border-t border-gray-200 pt-8">
@@ -354,10 +404,14 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                 <dt className="text-gray-500 font-bold tracking-widest uppercase text-xs">Shipping</dt>
                 <dd className="font-black text-gray-900 tracking-wide">{totals.shipping === 0 ? 'FREE' : `₹${totals.shipping.toFixed(2)}`}</dd>
               </div>
-              {totals.discount > 0 && (
+              {appliedCoupon && (
                 <div className="flex items-center justify-between text-[#FF7A00]">
-                  <dt className="font-bold tracking-widest uppercase text-xs">Discount ({appliedCoupon?.code})</dt>
-                  <dd className="font-black tracking-wide">-₹{totals.discount.toFixed(2)}</dd>
+                  <dt className="font-bold tracking-widest uppercase text-xs">
+                    {appliedCoupon.isFreeGift ? `Free Gift (${appliedCoupon.code})` : `Discount (${appliedCoupon.code})`}
+                  </dt>
+                  <dd className="font-black tracking-wide">
+                    {appliedCoupon.isFreeGift ? 'FREE' : `-₹${totals.discount.toFixed(2)}`}
+                  </dd>
                 </div>
               )}
               <div className="flex items-center justify-between border-t border-gray-200 pt-6 mt-6">
@@ -369,6 +423,72 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
         </div>
 
       </div>
+
+      {/* View Offers Modal */}
+      {isCouponModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-opacity">
+          <div className="bg-white w-full sm:w-[480px] h-[85vh] sm:h-auto sm:max-h-[85vh] rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-6 sm:p-8 border-b border-gray-100 shrink-0">
+              <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                <Ticket className="w-5 h-5 text-[#FF7A00]" />
+                Available Offers
+              </h3>
+              <button 
+                onClick={() => setIsCouponModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-4 flex-1">
+              {publicCoupons.map(coupon => {
+                const isLocked = totals.subtotal < coupon.min_order_amount;
+                return (
+                  <button
+                    key={coupon.id}
+                    type="button"
+                    onClick={() => {
+                      handleApplyCoupon(coupon.code)
+                      if (!isLocked) setIsCouponModalOpen(false)
+                    }}
+                    className={`w-full flex flex-col items-start p-6 border rounded-2xl text-left transition-all duration-300 relative overflow-hidden group ${isLocked ? 'border-gray-200 bg-gray-50 opacity-60 hover:bg-gray-100' : 'border-[#FF7A00]/30 bg-[#FF7A00]/5 hover:bg-[#FF7A00]/10 hover:border-[#FF7A00]'}`}
+                  >
+                    {!isLocked && (
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF7A00]/10 rounded-bl-full -z-10 group-hover:scale-150 transition-transform duration-500"></div>
+                    )}
+                    
+                    <div className="flex items-start justify-between w-full">
+                      <span className="font-black text-sm text-gray-900 tracking-wide border border-dashed border-gray-300 px-3 py-1 rounded bg-white">{coupon.code}</span>
+                      {!isLocked && <span className="text-[10px] font-bold text-[#FF7A00] uppercase tracking-widest bg-[#FF7A00]/10 px-2 py-1 rounded">Apply</span>}
+                    </div>
+                    
+                    <span className="text-xs font-bold text-gray-800 mt-4 uppercase tracking-widest">
+                      {coupon.discount_type === 'PERCENTAGE' 
+                        ? `${coupon.discount_value}% OFF` 
+                        : coupon.discount_value === 0 
+                          ? 'FREE GIFT ON ORDER' 
+                          : `FLAT ₹${coupon.discount_value} OFF`}
+                    </span>
+                    
+                    {coupon.min_order_amount > 0 && (
+                      <span className="text-[10px] text-gray-500 font-medium mt-1">
+                        On orders above ₹{coupon.min_order_amount}
+                      </span>
+                    )}
+
+                    {isLocked && (
+                      <span className="text-[10px] text-red-500 font-bold mt-4 uppercase tracking-wide flex items-center gap-1 bg-red-50 px-3 py-2 rounded-lg w-full">
+                        Add ₹{(coupon.min_order_amount - totals.subtotal).toFixed(2)} more to unlock
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

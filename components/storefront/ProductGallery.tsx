@@ -20,7 +20,7 @@ export function ProductGallery({ images }: { images: any[] }) {
                 activeImage === img.url ? 'border-2 border-[#FF7A00] scale-95 shadow-md' : 'border border-transparent hover:opacity-80'
               }`}
             >
-              <Image src={img.url} alt="Thumbnail" fill className="object-cover" sizes="96px" unoptimized />
+              <Image src={img.url} alt="Thumbnail" fill className="object-cover" sizes="96px" />
             </button>
           ))}
         </div>
@@ -35,7 +35,6 @@ export function ProductGallery({ images }: { images: any[] }) {
             fill
             className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
             priority
-            unoptimized
             sizes="(min-width: 1024px) 50vw, 100vw"
           />
         ) : (
