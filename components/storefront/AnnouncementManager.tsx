@@ -5,13 +5,63 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    const target = new Date(targetDate).getTime()
+    
+    const interval = setInterval(() => {
+      const now = new Date().getTime()
+      const distance = target - now
+      
+      if (distance < 0) {
+        clearInterval(interval)
+        return
+      }
+      
+      setTimeLeft({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+      })
+    }, 1000)
+    
+    return () => clearInterval(interval)
+  }, [targetDate])
+
+  return (
+    <div className="flex items-center gap-2 mt-2 mb-4">
+      <div className="flex flex-col items-center">
+        <span className="text-white font-black text-xl md:text-2xl leading-none tracking-tighter">{String(timeLeft.days).padStart(2, '0')}</span>
+        <span className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Days</span>
+      </div>
+      <span className="text-gray-500 font-black text-xl leading-none -mt-3">:</span>
+      <div className="flex flex-col items-center">
+        <span className="text-white font-black text-xl md:text-2xl leading-none tracking-tighter">{String(timeLeft.hours).padStart(2, '0')}</span>
+        <span className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Hours</span>
+      </div>
+      <span className="text-gray-500 font-black text-xl leading-none -mt-3">:</span>
+      <div className="flex flex-col items-center">
+        <span className="text-white font-black text-xl md:text-2xl leading-none tracking-tighter">{String(timeLeft.minutes).padStart(2, '0')}</span>
+        <span className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Mins</span>
+      </div>
+      <span className="text-gray-500 font-black text-xl leading-none -mt-3">:</span>
+      <div className="flex flex-col items-center">
+        <span className="text-white font-black text-xl md:text-2xl leading-none tracking-tighter">{String(timeLeft.seconds).padStart(2, '0')}</span>
+        <span className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Secs</span>
+      </div>
+    </div>
+  )
+}
+
 export function AnnouncementManager({ announcements }: { announcements: any[] }) {
   const router = useRouter()
   const [closedIds, setClosedIds] = useState<string[]>([])
   const [hasScrolled, setHasScrolled] = useState(false)
 
   useEffect(() => {
-    // Load closed announcements from session storage
     const stored = sessionStorage.getItem('shahi_closed_announcements')
     if (stored) {
       setClosedIds(JSON.parse(stored))
@@ -44,7 +94,6 @@ export function AnnouncementManager({ announcements }: { announcements: any[] })
     router.push(url)
   }
 
-  // Filter out closed ones
   const activeAnnouncements = announcements.filter(a => !closedIds.includes(a.id))
 
   const globalBanner = activeAnnouncements.find(a => a.display_type === 'GLOBAL_BANNER')
@@ -73,27 +122,39 @@ export function AnnouncementManager({ announcements }: { announcements: any[] })
         </div>
       )}
 
-      {/* 2. Homepage Popup (Modal) */}
+      {/* 2. Homepage Popup (Modal) matching Design 1 */}
       {homePopup && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
-          <div className="bg-white rounded-[2rem] overflow-hidden max-w-md w-full mx-4 relative shadow-[0_0_50px_rgba(212,175,55,0.15)] animate-in zoom-in-95 duration-700 border border-[#D4AF37]/20">
-            <button onClick={() => handleClose(homePopup.id)} className="absolute top-4 right-4 z-20 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-colors">
-              <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-500 p-4">
+          <div className="bg-white rounded-3xl overflow-hidden max-w-[850px] w-full relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-700 flex flex-col md:flex-row">
+            <button onClick={() => handleClose(homePopup.id)} className="absolute top-4 right-4 z-20 p-2 bg-gray-100/50 hover:bg-gray-200 text-gray-500 rounded-full transition-colors">
+              <X className="w-4 h-4" />
             </button>
-            {homePopup.image_url && (
-              <div className="w-full h-72 relative">
-                <img src={homePopup.image_url} alt={homePopup.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent"></div>
-              </div>
-            )}
-            <div className={`p-8 text-center space-y-4 ${homePopup.image_url ? '-mt-16 relative z-10' : ''}`}>
-              <div className="inline-block bg-[#D4AF37]/10 text-[#D4AF37] px-4 py-1.5 rounded-full text-[9px] font-black tracking-widest uppercase mb-2">Exclusive Notice</div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 leading-none">{homePopup.title}</h2>
-              {homePopup.description && <p className="text-gray-500 font-medium text-sm leading-relaxed px-4">{homePopup.description}</p>}
+            
+            {/* Left Image Section */}
+            <div className="w-full md:w-1/2 h-48 md:h-auto relative bg-gradient-to-br from-[#E2F0F9] to-[#F4F9FB] flex items-center justify-center p-8 overflow-hidden">
+              {/* Abstract decorative blob */}
+              <div className="absolute top-0 right-0 bottom-0 w-[120%] bg-[#D0E7F4] rounded-l-full transform translate-x-1/4"></div>
+              {homePopup.image_url ? (
+                <img src={homePopup.image_url} alt={homePopup.title} className="relative z-10 w-full h-full object-contain max-h-[300px] drop-shadow-2xl" />
+              ) : (
+                <div className="relative z-10 w-32 h-32 bg-white/50 rounded-2xl flex items-center justify-center border border-white">
+                  <span className="text-[#15B0B8] font-bold text-4xl">SHAHI</span>
+                </div>
+              )}
+            </div>
+
+            {/* Right Content Section */}
+            <div className={`p-8 md:p-12 text-center flex flex-col justify-center items-center w-full ${homePopup.image_url ? 'md:w-1/2' : ''}`}>
+              <h2 className="text-2xl md:text-3xl font-sans font-black text-gray-900 leading-tight mb-4 tracking-tight">{homePopup.title}</h2>
+              {homePopup.description && <p className="text-gray-500 font-medium text-sm md:text-[15px] leading-relaxed mb-8 max-w-xs">{homePopup.description}</p>}
+              
               {homePopup.action_link && homePopup.action_text && (
-                <div className="pt-6">
-                  <Link href={homePopup.action_link} onClick={() => handleClose(homePopup.id)} className="inline-block bg-[#1C1C1C] hover:bg-[#D4AF37] text-white font-black uppercase tracking-widest text-xs px-10 py-5 rounded-full transition-colors w-full shadow-lg">
-                    {homePopup.action_text}
+                <div className="flex items-center bg-[#15B0B8] rounded-full p-1.5 w-full max-w-[280px] shadow-lg shadow-[#15B0B8]/20 hover:shadow-[#15B0B8]/40 transition-shadow">
+                  <span className="text-white font-bold px-4 md:px-6 text-sm truncate flex-1 text-center">
+                    {homePopup.action_text.toLowerCase().includes('code') || homePopup.action_text.includes('%') ? homePopup.action_text : `#${homePopup.action_text.replace(/\s+/g, '')}`}
+                  </span>
+                  <Link href={homePopup.action_link} onClick={() => handleClose(homePopup.id)} className="bg-[#1a2b3c] text-white font-bold text-xs md:text-sm px-6 py-2.5 rounded-full hover:bg-black transition-colors whitespace-nowrap">
+                    {homePopup.action_text.toLowerCase().includes('code') || homePopup.action_text.includes('%') ? 'Copy' : 'Shop Now'}
                   </Link>
                 </div>
               )}
@@ -102,31 +163,58 @@ export function AnnouncementManager({ announcements }: { announcements: any[] })
         </div>
       )}
 
-      {/* 3. Corner Slide-in Toast */}
+      {/* 3. Corner Slide-in Toast matching Design 2 */}
       {cornerToast && hasScrolled && (
         <div 
-          onClick={cornerToast.action_link ? () => handleToastClick(cornerToast.action_link) : undefined}
-          className={`fixed bottom-6 left-6 md:left-auto md:right-6 z-40 max-w-[16rem] w-[calc(100%-3rem)] md:w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-[#D4AF37]/20 p-3 animate-in slide-in-from-bottom-12 fade-in duration-700 ${cornerToast.action_link ? 'cursor-pointer hover:border-[#D4AF37] hover:shadow-[0_10px_30px_rgba(212,175,55,0.15)] transition-all' : ''}`}
+          className="fixed bottom-6 left-6 md:left-auto md:right-8 z-40 max-w-[380px] w-[calc(100%-3rem)] md:w-full bg-[#1e293b] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-5 animate-in slide-in-from-bottom-12 fade-in duration-700 border border-white/10"
         >
           <button 
-            onClick={(e) => { e.stopPropagation(); handleClose(cornerToast.id); }} 
-            className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-200 rounded-full transition-colors z-10"
+            onClick={() => handleClose(cornerToast.id)} 
+            className="absolute top-3 left-3 p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
-          <div className="flex gap-3">
-            {cornerToast.image_url && (
-              <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gray-100 border border-gray-100 shadow-inner">
-                <img src={cornerToast.image_url} alt={cornerToast.title} className="w-full h-full object-cover" />
+          
+          <div className="flex gap-5 h-full">
+            {/* Left Image */}
+            <div className="w-[100px] shrink-0 bg-white rounded-2xl p-2 relative flex flex-col items-center justify-center">
+              {cornerToast.image_url ? (
+                <img src={cornerToast.image_url} alt={cornerToast.title} className="w-full h-auto object-contain drop-shadow-md" />
+              ) : (
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400 text-xs font-bold">Image</span>
+                </div>
+              )}
+              {/* Optional Badge over image if needed, usually baked into image in the design */}
+            </div>
+            
+            {/* Right Content */}
+            <div className="flex flex-col justify-center flex-1 py-1">
+              <h4 className="font-bold text-white text-[15px] tracking-tight leading-tight mb-1">{cornerToast.title}</h4>
+              
+              {/* Countdown Timer (if end_date exists, otherwise just description) */}
+              {cornerToast.end_date ? (
+                <CountdownTimer targetDate={cornerToast.end_date} />
+              ) : (
+                <p className="text-xs text-gray-400 mb-4 line-clamp-2">{cornerToast.description}</p>
+              )}
+              
+              <div className="space-y-3 mt-1">
+                {cornerToast.action_link && (
+                  <button 
+                    onClick={() => handleToastClick(cornerToast.action_link)}
+                    className="w-full bg-white text-[#1e293b] font-bold text-xs py-2.5 rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                  >
+                    {cornerToast.action_text || 'Shop Now'}
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleClose(cornerToast.id)}
+                  className="w-full text-[10px] text-gray-400 font-medium hover:text-white transition-colors uppercase tracking-widest text-center block"
+                >
+                  No Thanks
+                </button>
               </div>
-            )}
-            <div className="flex flex-col justify-center pr-4">
-              <div className="flex items-center space-x-1.5 mb-0.5">
-                <span className="w-1 h-1 rounded-full bg-[#D4AF37] animate-pulse"></span>
-                <span className="text-[7px] font-black tracking-widest text-[#D4AF37] uppercase">Just For You</span>
-              </div>
-              <h4 className="font-bold text-gray-900 text-xs tracking-tight leading-tight line-clamp-1">{cornerToast.title}</h4>
-              {cornerToast.description && <p className="text-[10px] text-gray-500 line-clamp-1 leading-relaxed mt-0.5">{cornerToast.description}</p>}
             </div>
           </div>
         </div>
