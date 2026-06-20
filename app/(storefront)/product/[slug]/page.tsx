@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 
 export const revalidate = 60
 
-export default async function ProductPage({ params }: any) {
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const supabase = createPublicClient()
 
@@ -43,6 +43,11 @@ export default async function ProductPage({ params }: any) {
   if (!product || product.status !== 'ACTIVE') {
     notFound()
   }
+
+  const { data: variants } = await supabase
+    .from('product_variants')
+    .select('*')
+    .eq('product_id', product.id)
 
   const { data: relatedProducts } = await supabase
     .from('products')
@@ -115,7 +120,7 @@ export default async function ProductPage({ params }: any) {
             </div>
 
             <div className="py-8">
-              <AddToCart product={product} />
+              <AddToCart product={product} variants={variants || []} />
             </div>
 
             <div className="mt-8 md:mt-12 bg-[#F8F9FA] rounded-[2rem] p-6 md:p-8 border border-gray-100">

@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { ProductForm } from '@/components/admin/ProductForm'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { SizeGuideManager } from '@/components/admin/SizeGuideManager'
+import { ProductVariantsManager } from '@/components/admin/ProductVariantsManager'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -14,6 +15,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const { data: categories } = await supabase.from('categories').select('id, name')
   const { data: images } = await supabase.from('product_images').select('*').eq('product_id', id).order('position', { ascending: true })
   const { data: sizeGuides } = await supabase.from('product_size_guides').select('*').eq('product_id', id).order('size_name', { ascending: true })
+  const { data: variants } = await supabase.from('product_variants').select('*').eq('product_id', id).order('color', { ascending: true })
 
   if (!product) {
     return (
@@ -44,10 +46,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       </div>
 
       <div className="space-y-4">
-        <ImageUpload productId={product.id} images={images || []} />
+        <ProductVariantsManager productId={product.id} variants={variants || []} />
       </div>
 
-
+      <div className="space-y-4">
+        <ImageUpload productId={product.id} images={images || []} />
+      </div>
 
       <div className="space-y-4">
         <SizeGuideManager productId={product.id} sizeGuides={sizeGuides || []} />

@@ -97,6 +97,15 @@ export async function deleteProduct(id: string) {
 
 
 
+export type VariantPayload = {
+  id?: string
+  color?: string
+  size?: string
+  stock?: number
+  sku?: string
+  price_override?: number | null
+}
+
 // Size Guides
 export async function saveSizeGuides(productId: string, guides: SizeGuidePayload[]) {
   const supabase = createAdminClient()
@@ -124,6 +133,37 @@ export async function deleteSizeGuide(id: string, productId: string) {
   const { error } = await supabase.from('product_size_guides').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath(`/admin/products/${productId}/edit`)
+  return { success: true }
+}
+
+// Variants
+export async function saveVariants(productId: string, variants: VariantPayload[]) {
+  const supabase = createAdminClient()
+  
+  const toUpsert = variants.map(v => ({
+    id: v.id || undefined,
+    product_id: productId,
+    color: v.color,
+    size: v.size,
+    stock: v.stock || 0,
+    sku: v.sku,
+    price_override: v.price_override
+  }))
+
+  const { error } = await supabase.from('product_variants').upsert(toUpsert, { onConflict: 'id' })
+  if (error) return { error: error.message }
+  
+  revalidatePath(`/admin/products/${productId}/edit`)
+  revalidatePath('/shop')
+  return { success: true }
+}
+
+export async function deleteVariant(id: string, productId: string) {
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('product_variants').delete().eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath(`/admin/products/${productId}/edit`)
+  revalidatePath('/shop')
   return { success: true }
 }
 

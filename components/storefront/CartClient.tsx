@@ -51,11 +51,18 @@ export function CartClient() {
                 <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
                   <div>
                     <div className="flex justify-between">
-                      <h3 className="text-sm">
-                        <Link href={`/product/${item.productId}`} className="font-semibold text-foreground hover:text-accent uppercase tracking-[0.15em] transition-colors">
-                          {item.name}
-                        </Link>
-                      </h3>
+                      <div>
+                        <h3 className="text-sm">
+                          <Link href={`/product/${item.productId}`} className="font-semibold text-foreground hover:text-accent uppercase tracking-[0.15em] transition-colors">
+                            {item.name}
+                          </Link>
+                        </h3>
+                        {(item.color || item.size) && (
+                          <p className="mt-1 text-xs text-muted-foreground capitalize">
+                            {item.color} {item.color && item.size && '|'} {item.size}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-2 flex text-xs text-muted-foreground uppercase tracking-widest font-light">
                       <p>Qty: {item.quantity}</p>

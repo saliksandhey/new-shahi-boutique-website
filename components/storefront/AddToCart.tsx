@@ -4,13 +4,26 @@ import { useState } from 'react'
 import { useCartStore } from '@/store/cart-store'
 import { ShoppingBag, Heart } from 'lucide-react'
 
-export function AddToCart({ product }: { product: any }) {
+export function AddToCart({ product, variants = [] }: { product: any, variants?: any[] }) {
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState<string>('')
+  
+  // Extract unique colors and sizes if variants are used
+  const uniqueColors = Array.from(new Set(variants.filter(v => v.color).map(v => v.color)))
+  const [selectedColor, setSelectedColor] = useState<string>(uniqueColors[0] || '')
+
+  // Find the selected variant based on color and size (if applicable)
+  const selectedVariant = variants.find(v => {
+    const colorMatch = v.color ? v.color === selectedColor : true;
+    const sizeMatch = v.size ? v.size === selectedSize : true;
+    return colorMatch && sizeMatch;
+  }) || variants.find(v => v.color === selectedColor) || null;
+
   const addItem = useCartStore(state => state.addItem)
   const openCart = useCartStore(state => state.openCart)
 
-  const outOfStock = product.stock <= 0
+  const currentStock = selectedVariant ? (selectedVariant.stock || 0) : product.stock
+  const outOfStock = currentStock <= 0
   const hasSizes = product.product_size_guides && product.product_size_guides.length > 0
 
   const handleAddToCart = () => {
@@ -19,14 +32,24 @@ export function AddToCart({ product }: { product: any }) {
       alert('Please select a size')
       return
     }
+    if (uniqueColors.length > 0 && !selectedColor) {
+      alert('Please select a color')
+      return
+    }
     
-    const finalPrice = product.sale_price || product.price
+    let finalPrice = product.sale_price || product.price
+    if (selectedVariant && selectedVariant.price_override) {
+      finalPrice = selectedVariant.price_override
+    }
 
     addItem({
-      id: product.id + (selectedSize ? `-${selectedSize}` : ''),
+      id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id + (selectedSize ? `-${selectedSize}` : ''),
       productId: product.id,
+      variantId: selectedVariant?.id || null,
       quantity: quantity,
-      name: product.name + (selectedSize ? ` (Size: ${selectedSize})` : ''),
+      name: product.name,
+      color: selectedColor || null,
+      size: selectedSize || null,
       price: finalPrice,
       image: product.product_images?.find((img: any) => img.is_primary)?.url || product.product_images?.[0]?.url || '/placeholder.png'
     })
@@ -35,8 +58,47 @@ export function AddToCart({ product }: { product: any }) {
     openCart()
   }
 
+  // Predefined color hex mapping for common colors
+  const getColorHex = (colorName: string) => {
+    const map: Record<string, string> = {
+      'red': '#ef4444', 'blue': '#3b82f6', 'green': '#22c55e', 
+      'black': '#000000', 'white': '#ffffff', 'yellow': '#eab308',
+      'royal blue': '#4169e1', 'gold': '#ffd700', 'silver': '#c0c0c0',
+      'pink': '#ec4899', 'purple': '#a855f7', 'orange': '#f97316',
+      'gray': '#6b7280', 'grey': '#6b7280', 'brown': '#8b4513'
+    }
+    return map[colorName.toLowerCase()] || '#e5e7eb' // Default gray
+  }
+
   return (
     <div className="space-y-8">
+      {uniqueColors.length > 0 && (
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest">Select Color <span className="text-gray-500 font-normal ml-2">{selectedColor}</span></h3>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {uniqueColors.map((color: any) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                title={color}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  selectedColor === color 
+                    ? 'ring-2 ring-offset-2 ring-[#FF7A00] scale-110 shadow-md' 
+                    : 'ring-1 ring-gray-200 hover:ring-[#FF7A00] hover:scale-105'
+                }`}
+              >
+                <span 
+                  className="w-8 h-8 rounded-full border border-gray-100 shadow-inner"
+                  style={{ backgroundColor: getColorHex(color) }}
+                ></span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasSizes && (
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -75,8 +137,8 @@ export function AddToCart({ product }: { product: any }) {
             <span className="text-sm font-bold text-gray-900 w-8 text-center">{quantity}</span>
             <button 
               type="button" 
-              onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-              disabled={outOfStock || quantity >= product.stock}
+              onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
+              disabled={outOfStock || quantity >= currentStock}
               className="w-10 h-10 rounded-full flex justify-center items-center text-gray-500 hover:text-[#FF7A00] hover:bg-white disabled:opacity-30 transition-colors text-xl shadow-sm border border-transparent hover:border-gray-100"
             >
               +
@@ -101,10 +163,10 @@ export function AddToCart({ product }: { product: any }) {
         </button>
       </div>
 
-      {product.stock > 0 && product.stock <= 5 && (
+      {currentStock > 0 && currentStock <= 5 && (
         <p className="text-xs text-red-500 font-bold tracking-widest uppercase flex items-center justify-center sm:justify-start gap-2 pt-2">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-          Only {product.stock} pieces remaining
+          Only {currentStock} pieces remaining
         </p>
       )}
     </div>

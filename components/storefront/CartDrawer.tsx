@@ -76,7 +76,14 @@ export function CartDrawer() {
                   <div className="flex flex-1 flex-col justify-between py-1">
                     <div>
                       <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-gray-900 text-sm leading-tight pr-4">{item.name}</h3>
+                        <div>
+                          <h3 className="font-bold text-gray-900 text-sm leading-tight pr-4">{item.name}</h3>
+                          {(item.color || item.size) && (
+                            <p className="text-xs text-gray-500 mt-1 capitalize">
+                              {item.color} {item.color && item.size && '|'} {item.size}
+                            </p>
+                          )}
+                        </div>
                         <button 
                           onClick={() => removeItem(item.id)}
                           className="text-gray-400 hover:text-red-500 transition-colors"

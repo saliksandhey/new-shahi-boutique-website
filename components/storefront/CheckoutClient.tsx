@@ -44,7 +44,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
 
   const updateTotals = async (currentShipping = shippingMethod, currentCoupon = appliedCoupon?.code) => {
     try {
-      const inputItems = items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+      const inputItems = items.map(i => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity }))
       const result = await calculateOrderTotal(inputItems, currentShipping, currentCoupon)
       setTotals({
         subtotal: result.subtotal,
@@ -70,7 +70,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
     setError(null)
     const code = codeToApply || couponCode
     try {
-      const inputItems = items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+      const inputItems = items.map(i => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity }))
       const result = await calculateOrderTotal(inputItems, shippingMethod, code)
       if (result.couponApplied) {
         setAppliedCoupon({ code: code, discount: result.discount, isFreeGift: result.isFreeGift })
@@ -94,7 +94,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
   const handlePlaceOrder = async () => {
     setLoading(true)
     setError(null)
-    const inputItems = items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+    const inputItems = items.map(i => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity }))
 
     try {
       if (paymentMethod === 'cod') {
@@ -368,7 +368,14 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                   </div>
                   <div className="ml-6 flex flex-1 flex-col justify-center">
                     <div className="flex justify-between items-start">
-                      <p className="font-bold text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">{item.name}</p>
+                      <div>
+                        <p className="font-bold text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">{item.name}</p>
+                        {(item.color || item.size) && (
+                          <p className="text-[10px] text-gray-500 mt-1 capitalize">
+                            {item.color} {item.color && item.size && '|'} {item.size}
+                          </p>
+                        )}
+                      </div>
                       <p className="text-sm font-black text-[#FF7A00] tracking-wide">₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>

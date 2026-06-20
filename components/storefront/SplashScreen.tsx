@@ -7,6 +7,14 @@ export function SplashScreen() {
   const [show, setShow] = useState(true)
 
   useEffect(() => {
+    // Ensure this shows ONLY ONCE per user session
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash')
+    if (hasSeenSplash) {
+      setShow(false)
+      return
+    }
+    sessionStorage.setItem('hasSeenSplash', 'true')
+    
     // Hide the splash screen after the animation sequence completes
     const timer = setTimeout(() => {
       setShow(false)
