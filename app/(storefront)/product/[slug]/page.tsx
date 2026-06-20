@@ -68,12 +68,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const sortedImages = (product.product_images || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
 
   return (
-    <div className="bg-white pt-16 md:pt-24 pb-16 md:pb-32">
-      <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
+    <div className="bg-white pt-16 md:pt-24 pb-40 md:pb-32">
+      <div className="mx-auto max-w-[1400px] px-0 lg:px-12">
         
-        {/* Breadcrumb */}
-        <nav className="flex text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-8 md:mb-12 overflow-x-auto whitespace-nowrap hide-scrollbar pb-2 sm:pb-0">
-          <ol className="flex items-center space-x-2">
+        <nav className="px-6 sm:px-8 lg:px-0 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mb-6 md:mb-12 pb-2 sm:pb-0">
+          <ol className="flex items-center flex-wrap gap-y-2">
             <li><a href="/" className="hover:text-[#FF7A00] transition-colors">Home</a></li>
             <li><span className="mx-2">/</span></li>
             <li><a href="/shop" className="hover:text-[#FF7A00] transition-colors">Shop</a></li>
@@ -84,7 +83,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </>
             )}
             <li><span className="mx-2">/</span></li>
-            <li className="text-gray-900">{product.name}</li>
+            <li className="text-gray-900 line-clamp-1 break-all sm:break-normal">{product.name}</li>
           </ol>
         </nav>
 
@@ -96,7 +95,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Product info */}
-          <div className="mt-8 md:mt-12 lg:mt-0">
+          <div className="mt-6 md:mt-12 lg:mt-0 px-6 sm:px-8 lg:px-0">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-sans font-black tracking-tighter text-gray-900 uppercase mb-3 md:mb-4 leading-none">
               {product.name}
             </h1>
@@ -174,7 +173,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Reviews */}
         {reviews && reviews.length > 0 && (
-          <div className="mt-24 md:mt-32 pt-12 md:pt-16">
+          <div className="mt-24 md:mt-32 pt-12 md:pt-16 px-6 sm:px-8 lg:px-0">
             <div className="text-center mb-10 md:mb-16">
               <h2 className="text-3xl md:text-5xl lg:text-6xl font-sans font-black tracking-tighter text-gray-900 uppercase mb-4 leading-none">
                 CLIENT REVIEWS
@@ -186,7 +185,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
-          <div className="mt-24 md:mt-32 pt-12 md:pt-16 border-t border-gray-100">
+          <div className="mt-24 md:mt-32 pt-12 md:pt-16 border-t border-gray-100 px-6 sm:px-8 lg:px-0">
             <div className="text-center mb-10 md:mb-16">
               <h2 className="text-3xl md:text-5xl lg:text-6xl font-sans font-black tracking-tighter text-gray-900 uppercase mb-4 leading-none">
                 YOU MAY ALSO LIKE

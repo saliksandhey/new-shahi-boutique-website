@@ -136,30 +136,30 @@ export function ProductForm({ product, categories }: { product?: any, categories
   }
 
   // Luxury UI Class Names
-  const cardClass = "border border-gray-200 shadow-none rounded-none bg-white"
-  const headerClass = "text-[11px] font-bold uppercase tracking-[0.2em] text-[#1C1C1C] border-b border-gray-100 pb-4 mb-6"
-  const labelClass = "text-[10px] font-bold uppercase tracking-[0.15em] text-gray-500 mb-2 block"
-  const inputClass = "rounded-none border-gray-200 shadow-none focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus-visible:border-[#D4AF37] bg-gray-50/50 hover:bg-white transition-colors"
+  const cardClass = "rounded-[2rem] border border-gray-100 bg-white shadow-sm overflow-hidden"
+  const headerClass = "text-xl font-black uppercase tracking-widest text-gray-900 border-b border-gray-50 pb-6 mb-8"
+  const labelClass = "text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block"
+  const inputClass = "rounded-xl border-gray-200 bg-gray-50 shadow-sm focus-visible:ring-1 focus-visible:ring-[#FF7A00] focus-visible:border-[#FF7A00] hover:bg-white transition-colors"
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-12">
-      {error && <div className="bg-red-50 text-red-600 p-4 border border-red-100 text-sm tracking-wide uppercase font-medium">{error}</div>}
+      {error && <div className="bg-red-50 text-red-600 p-4 border border-red-100 rounded-[2rem] text-[10px] font-bold tracking-widest uppercase">{error}</div>}
       
       {/* General Information */}
       <Card className={cardClass}>
-        <CardContent className="pt-6">
+        <CardContent className="p-8 md:p-10">
           <h3 className={headerClass}>General Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <Label htmlFor="name" className={labelClass}>Product Name</Label>
               <Input id="name" {...form.register('name')} onChange={handleNameChange} className={inputClass} placeholder="e.g. Silk Embroidered Kurta" />
-              {form.formState.errors.name && <p className="text-[10px] uppercase text-red-500 mt-2">{form.formState.errors.name.message}</p>}
+              {form.formState.errors.name && <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2">{form.formState.errors.name.message}</p>}
             </div>
 
             <div>
               <Label htmlFor="slug" className={labelClass}>URL Slug</Label>
               <Input id="slug" {...form.register('slug')} className={inputClass} placeholder="silk-embroidered-kurta" />
-              {form.formState.errors.slug && <p className="text-[10px] uppercase text-red-500 mt-2">{form.formState.errors.slug.message}</p>}
+              {form.formState.errors.slug && <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2">{form.formState.errors.slug.message}</p>}
             </div>
 
             <div>
@@ -191,7 +191,7 @@ export function ProductForm({ product, categories }: { product?: any, categories
             </div>
 
             <div className="flex items-center space-x-3 pt-6">
-              <input type="checkbox" id="featured" {...form.register('featured')} className="h-4 w-4 rounded-none border-gray-300 text-[#D4AF37] focus:ring-[#D4AF37]" />
+              <input type="checkbox" id="featured" {...form.register('featured')} className="h-5 w-5 rounded border-gray-300 text-[#FF7A00] focus:ring-[#FF7A00]" />
               <Label htmlFor="featured" className={`${labelClass} !mb-0 cursor-pointer`}>Highlight as Featured</Label>
             </div>
           </div>
@@ -211,20 +211,20 @@ export function ProductForm({ product, categories }: { product?: any, categories
       {/* Product Images (Only for new products) */}
       {!product && (
         <Card className={cardClass}>
-          <CardContent className="pt-6">
+          <CardContent className="p-8 md:p-10">
             <h3 className={headerClass}>Product Gallery</h3>
-            <p className="text-[11px] text-gray-500 mb-6 font-medium tracking-wide">Upload high-resolution images. The first image will be used as the primary display.</p>
+            <p className="text-[10px] text-gray-500 mb-6 font-bold uppercase tracking-widest">Upload high-resolution images. The first image will be used as the primary display.</p>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {selectedImages.map((img, idx) => (
-                <div key={idx} className="relative aspect-[3/4] border border-gray-200 overflow-hidden bg-gray-50 group">
+                <div key={idx} className="relative aspect-[3/4] border border-gray-100 rounded-2xl overflow-hidden bg-gray-50 group">
                   <img src={img.preview} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <button type="button" onClick={() => removeSelectedImage(idx)} className="absolute top-2 right-2 bg-black/50 hover:bg-black text-white p-1.5 transition-colors">
+                  <button type="button" onClick={() => removeSelectedImage(idx)} className="absolute top-3 right-3 bg-[#1C1C1C] hover:bg-[#FF7A00] rounded-full text-white p-2 transition-colors">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
-              <label className="border hover:border-[#D4AF37] border-gray-200 flex flex-col items-center justify-center aspect-[3/4] text-gray-400 hover:text-[#D4AF37] transition-colors cursor-pointer bg-gray-50/30">
+              <label className="border-2 border-dashed rounded-2xl hover:border-[#FF7A00] border-gray-200 flex flex-col items-center justify-center aspect-[3/4] text-gray-400 hover:text-[#FF7A00] transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/50">
                 <Upload className="h-6 w-6 mb-3" strokeWidth={1.5} />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-center px-4">Add Media</span>
                 <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageSelection} disabled={uploadingImages} />
@@ -236,7 +236,7 @@ export function ProductForm({ product, categories }: { product?: any, categories
 
       {/* Pricing & Inventory */}
       <Card className={cardClass}>
-        <CardContent className="pt-6">
+        <CardContent className="p-8 md:p-10">
           <h3 className={headerClass}>Pricing & Inventory</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -259,7 +259,7 @@ export function ProductForm({ product, categories }: { product?: any, categories
 
       {/* Product Details */}
       <Card className={cardClass}>
-        <CardContent className="pt-6">
+        <CardContent className="p-8 md:p-10">
           <h3 className={headerClass}>Specifications</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
@@ -292,7 +292,7 @@ export function ProductForm({ product, categories }: { product?: any, categories
 
       {/* SEO */}
       <Card className={cardClass}>
-        <CardContent className="pt-6">
+        <CardContent className="p-8 md:p-10">
           <h3 className={headerClass}>Search Optimization</h3>
           <div className="space-y-6">
             <div>
@@ -312,11 +312,11 @@ export function ProductForm({ product, categories }: { product?: any, categories
       </Card>
 
       {/* Action Bar */}
-      <div className="flex justify-end pt-6 border-t border-gray-200">
+      <div className="flex justify-end pt-6">
         <Button 
           type="submit" 
           disabled={form.formState.isSubmitting || uploadingImages} 
-          className="bg-[#1C1C1C] hover:bg-[#D4AF37] text-white rounded-none uppercase tracking-[0.2em] text-[11px] font-bold px-12 py-7 transition-colors shadow-none"
+          className="rounded-full bg-[#1C1C1C] text-white px-10 py-6 text-[10px] font-bold uppercase tracking-widest hover:bg-[#FF7A00] shadow-xl transition-all duration-300 w-full sm:w-auto"
         >
           {form.formState.isSubmitting || uploadingImages ? 'Processing...' : (product ? 'Update Collection' : 'Add to Collection')}
         </Button>

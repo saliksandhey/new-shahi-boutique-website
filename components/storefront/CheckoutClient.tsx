@@ -5,7 +5,7 @@ import { useCartStore } from '@/store/cart-store'
 import { useRouter } from 'next/navigation'
 import { calculateOrderTotal, createRazorpayOrderAction, verifyAndCreateOrder, createCODOrderAction, getPublicCoupons } from '@/lib/actions/checkout'
 import Script from 'next/script'
-import { Ticket, X, Gift } from 'lucide-react'
+import { Ticket, X, Gift, ShoppingCart, ChevronDown } from 'lucide-react'
 
 export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: boolean, razorpayKeyId: string }) {
   const { items, clearCart } = useCartStore()
@@ -31,6 +31,9 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
   // Public Coupons
   const [publicCoupons, setPublicCoupons] = useState<any[]>([])
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false)
+
+  // Mobile Order Summary Toggle
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -168,16 +171,117 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
     }
   }
 
-  const inputClasses = "w-full bg-white border border-gray-200 focus:border-[#FF7A00] focus:ring-0 rounded-full py-4 px-6 text-sm font-bold text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 placeholder:font-medium"
+  const renderOrderSummary = (isMobile = false) => (
+    <div className={isMobile ? "" : "bg-[#F8F9FA] border border-gray-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 sm:p-10 sticky top-32"}>
+      {!isMobile && (
+        <h2 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-8 border-b border-gray-200 pb-6">
+          Order Summary
+        </h2>
+      )}
+      
+      <ul role="list" className="divide-y divide-gray-200 mb-6 lg:mb-8">
+        {items.map((item) => (
+          <li key={item.id} className="flex py-4 lg:py-6">
+            <div className="flex-shrink-0 relative w-16 h-24 lg:w-20 lg:h-28 bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100">
+              <img src={item.image} alt={item.name} className="object-cover object-center w-full h-full" />
+              <span className="absolute top-2 right-2 bg-[#1C1C1C] text-white rounded-full text-[9px] lg:text-[10px] w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center font-bold shadow-md">
+                {item.quantity}
+              </span>
+            </div>
+            <div className="ml-4 lg:ml-6 flex flex-1 flex-col justify-center">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-bold text-[10px] lg:text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">{item.name}</p>
+                  {(item.color || item.size) && (
+                    <p className="text-[9px] lg:text-[10px] text-gray-500 mt-1 capitalize">
+                      {item.color} {item.color && item.size && '|'} {item.size}
+                    </p>
+                  )}
+                </div>
+                <p className="text-xs lg:text-sm font-black text-[#FF7A00] tracking-wide">₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}</p>
+              </div>
+            </div>
+          </li>
+        ))}
+        {appliedCoupon?.isFreeGift && (
+          <li className="flex py-4 lg:py-6 border-t border-dashed border-[#D4AF37]/30 mt-2">
+            <div className="flex-shrink-0 relative w-16 h-24 lg:w-20 lg:h-28 bg-[#D4AF37]/10 flex items-center justify-center overflow-hidden rounded-xl shadow-sm border border-[#D4AF37]/30">
+              <Gift className="w-6 h-6 lg:w-8 lg:h-8 text-[#D4AF37]" />
+              <span className="absolute top-2 right-2 bg-[#D4AF37] text-white rounded-full text-[9px] lg:text-[10px] w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center font-bold shadow-md">
+                1
+              </span>
+            </div>
+            <div className="ml-4 lg:ml-6 flex flex-1 flex-col justify-center">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-bold text-[10px] lg:text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">Surprise Free Gift</p>
+                  <p className="text-[8px] lg:text-[9px] text-[#D4AF37] font-black mt-1 lg:mt-2 uppercase tracking-widest bg-[#D4AF37]/10 inline-block px-2 py-1 rounded">Unlocked Offer</p>
+                </div>
+                <p className="text-xs lg:text-sm font-black text-[#D4AF37] tracking-wide">FREE</p>
+              </div>
+            </div>
+          </li>
+        )}
+      </ul>
+
+      <dl className="space-y-4 lg:space-y-6 text-xs lg:text-sm border-t border-gray-200 pt-6 lg:pt-8">
+        <div className="flex items-center justify-between">
+          <dt className="text-gray-500 font-bold tracking-widest uppercase text-[10px] lg:text-xs">Subtotal</dt>
+          <dd className="font-black text-gray-900 tracking-wide">₹{totals.subtotal.toFixed(2)}</dd>
+        </div>
+        <div className="flex items-center justify-between">
+          <dt className="text-gray-500 font-bold tracking-widest uppercase text-[10px] lg:text-xs">Shipping</dt>
+          <dd className="font-black text-gray-900 tracking-wide">{totals.shipping === 0 ? 'FREE' : `₹${totals.shipping.toFixed(2)}`}</dd>
+        </div>
+        {appliedCoupon && (
+          <div className="flex items-center justify-between text-[#FF7A00]">
+            <dt className="font-bold tracking-widest uppercase text-[10px] lg:text-xs">
+              {appliedCoupon.isFreeGift ? `Free Gift (${appliedCoupon.code})` : `Discount (${appliedCoupon.code})`}
+            </dt>
+            <dd className="font-black tracking-wide">
+              {appliedCoupon.isFreeGift ? 'FREE' : `-₹${totals.discount.toFixed(2)}`}
+            </dd>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-t border-gray-200 pt-4 lg:pt-6 mt-4 lg:mt-6">
+          <dt className="text-lg lg:text-xl font-sans font-black uppercase tracking-tighter text-gray-900">Total</dt>
+          <dd className="text-xl lg:text-2xl font-black text-[#FF7A00] tracking-tight">₹{totals.total.toFixed(2)}</dd>
+        </div>
+      </dl>
+    </div>
+  )
+
+  const inputClasses = "w-full bg-white border border-gray-200 focus:border-[#FF7A00] focus:ring-0 rounded-full py-3 px-5 md:py-4 md:px-6 text-xs md:text-sm font-bold text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 placeholder:font-medium"
 
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
         
+        {/* Mobile Order Summary Toggle */}
+        <div className="lg:hidden mb-6">
+          <button 
+            onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+            className="w-full flex items-center justify-between bg-[#F8F9FA] p-4 rounded-2xl border border-gray-200 focus:outline-none"
+          >
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-900 uppercase tracking-widest">
+              <ShoppingCart className="w-4 h-4 text-[#FF7A00]" />
+              {isMobileSummaryOpen ? 'Hide' : 'Show'} Summary
+              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isMobileSummaryOpen ? 'rotate-180' : ''}`} />
+            </div>
+            <span className="font-black text-lg text-[#FF7A00]">₹{totals.total.toFixed(2)}</span>
+          </button>
+          
+          <div className={`overflow-hidden transition-all duration-300 ${isMobileSummaryOpen ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="bg-[#F8F9FA] p-5 rounded-2xl border border-gray-200">
+               {renderOrderSummary(true)}
+            </div>
+          </div>
+        </div>
+
         {/* Main Checkout Flow */}
         <div className="lg:col-span-7">
-          <div className="bg-[#F8F9FA] rounded-[1.5rem] md:rounded-[2rem] p-5 sm:p-12 border border-gray-100 space-y-8 md:space-y-12">
+          <div className="bg-[#F8F9FA] rounded-2xl md:rounded-[2rem] p-4 sm:p-8 md:p-12 border border-gray-100 space-y-8 md:space-y-12">
             
             {error && (
               <div className="bg-red-50 text-red-500 p-4 rounded-xl text-xs tracking-widest uppercase font-bold text-center">
@@ -215,7 +319,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                     <button 
                       onClick={() => setStep(2)}
                       disabled={!address.firstName || !address.lastName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email) || !address.street || !address.city || !address.state || !address.zip || address.phone.length !== 10}
-                      className="w-full rounded-full bg-[#1C1C1C] text-white py-5 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 disabled:bg-gray-200 disabled:text-gray-400 shadow-md"
+                      className="w-full rounded-full bg-[#1C1C1C] text-white py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 disabled:bg-gray-200 disabled:text-gray-400 shadow-md"
                     >
                       Continue to Delivery
                     </button>
@@ -253,7 +357,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                   <div className="mt-6">
                     <button 
                       onClick={() => setStep(3)}
-                      className="w-full rounded-full bg-[#1C1C1C] text-white py-5 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-md"
+                      className="w-full rounded-full bg-[#1C1C1C] text-white py-4 md:py-5 text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-md"
                     >
                       Continue to Payment
                     </button>
@@ -289,7 +393,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                       <button 
                         type="button" 
                         onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); updateTotals(shippingMethod, undefined) } : () => handleApplyCoupon()}
-                        className="bg-[#1C1C1C] text-white rounded-full px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-sm whitespace-nowrap"
+                        className="bg-[#1C1C1C] text-white rounded-full px-6 py-3 md:px-8 md:py-4 text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-sm whitespace-nowrap"
                       >
                         {appliedCoupon ? 'Remove' : 'Apply'}
                       </button>
@@ -338,7 +442,7 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
                     <button 
                       onClick={handlePlaceOrder}
                       disabled={loading}
-                      className="w-full rounded-full bg-[#FF7A00] text-white py-6 text-sm font-black uppercase tracking-widest hover:bg-[#1C1C1C] transition-colors duration-300 disabled:bg-gray-200 disabled:text-gray-400 shadow-xl"
+                      className="w-full rounded-full bg-[#FF7A00] text-white py-5 md:py-6 text-xs md:text-sm font-black uppercase tracking-widest hover:bg-[#1C1C1C] transition-colors duration-300 disabled:bg-gray-200 disabled:text-gray-400 shadow-xl"
                     >
                       {loading ? 'Processing...' : `Pay ₹${totals.total.toFixed(2)}`}
                     </button>
@@ -351,82 +455,8 @@ export function CheckoutClient({ codEnabled, razorpayKeyId }: { codEnabled: bool
         </div>
 
         {/* Order Summary Sidebar */}
-        <div className="lg:col-span-5 mt-8 md:mt-12 lg:mt-0">
-          <div className="bg-[#F8F9FA] border border-gray-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 sm:p-10 sticky top-32">
-            <h2 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-8 border-b border-gray-200 pb-6">
-              Order Summary
-            </h2>
-            
-            <ul role="list" className="divide-y divide-gray-200 mb-8">
-              {items.map((item) => (
-                <li key={item.id} className="flex py-6">
-                  <div className="flex-shrink-0 relative w-20 h-28 bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100">
-                    <img src={item.image} alt={item.name} className="object-cover object-center w-full h-full" />
-                    <span className="absolute top-2 right-2 bg-[#1C1C1C] text-white rounded-full text-[10px] w-6 h-6 flex items-center justify-center font-bold shadow-md">
-                      {item.quantity}
-                    </span>
-                  </div>
-                  <div className="ml-6 flex flex-1 flex-col justify-center">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">{item.name}</p>
-                        {(item.color || item.size) && (
-                          <p className="text-[10px] text-gray-500 mt-1 capitalize">
-                            {item.color} {item.color && item.size && '|'} {item.size}
-                          </p>
-                        )}
-                      </div>
-                      <p className="text-sm font-black text-[#FF7A00] tracking-wide">₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                </li>
-              ))}
-              {appliedCoupon?.isFreeGift && (
-                <li className="flex py-6 border-t border-dashed border-[#D4AF37]/30 mt-2">
-                  <div className="flex-shrink-0 relative w-20 h-28 bg-[#D4AF37]/10 flex items-center justify-center overflow-hidden rounded-xl shadow-sm border border-[#D4AF37]/30">
-                    <Gift className="w-8 h-8 text-[#D4AF37]" />
-                    <span className="absolute top-2 right-2 bg-[#D4AF37] text-white rounded-full text-[10px] w-6 h-6 flex items-center justify-center font-bold shadow-md">
-                      1
-                    </span>
-                  </div>
-                  <div className="ml-6 flex flex-1 flex-col justify-center">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-xs text-gray-900 uppercase tracking-widest leading-relaxed pr-4">Surprise Free Gift</p>
-                        <p className="text-[9px] text-[#D4AF37] font-black mt-2 uppercase tracking-widest bg-[#D4AF37]/10 inline-block px-2 py-1 rounded">Unlocked Offer</p>
-                      </div>
-                      <p className="text-sm font-black text-[#D4AF37] tracking-wide">FREE</p>
-                    </div>
-                  </div>
-                </li>
-              )}
-            </ul>
-
-            <dl className="space-y-6 text-sm border-t border-gray-200 pt-8">
-              <div className="flex items-center justify-between">
-                <dt className="text-gray-500 font-bold tracking-widest uppercase text-xs">Subtotal</dt>
-                <dd className="font-black text-gray-900 tracking-wide">₹{totals.subtotal.toFixed(2)}</dd>
-              </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-gray-500 font-bold tracking-widest uppercase text-xs">Shipping</dt>
-                <dd className="font-black text-gray-900 tracking-wide">{totals.shipping === 0 ? 'FREE' : `₹${totals.shipping.toFixed(2)}`}</dd>
-              </div>
-              {appliedCoupon && (
-                <div className="flex items-center justify-between text-[#FF7A00]">
-                  <dt className="font-bold tracking-widest uppercase text-xs">
-                    {appliedCoupon.isFreeGift ? `Free Gift (${appliedCoupon.code})` : `Discount (${appliedCoupon.code})`}
-                  </dt>
-                  <dd className="font-black tracking-wide">
-                    {appliedCoupon.isFreeGift ? 'FREE' : `-₹${totals.discount.toFixed(2)}`}
-                  </dd>
-                </div>
-              )}
-              <div className="flex items-center justify-between border-t border-gray-200 pt-6 mt-6">
-                <dt className="text-xl font-sans font-black uppercase tracking-tighter text-gray-900">Total</dt>
-                <dd className="text-2xl font-black text-[#FF7A00] tracking-tight">₹{totals.total.toFixed(2)}</dd>
-              </div>
-            </dl>
-          </div>
+        <div className="hidden lg:block lg:col-span-5 mt-8 md:mt-12 lg:mt-0">
+          {renderOrderSummary()}
         </div>
 
       </div>

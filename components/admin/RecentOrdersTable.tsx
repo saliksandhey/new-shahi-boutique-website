@@ -30,10 +30,10 @@ export async function RecentOrdersTable() {
         <Table>
           <TableHeader className="bg-gray-50">
             <TableRow className="border-gray-100 hover:bg-transparent">
-              <TableHead className="text-gray-900 font-bold uppercase tracking-widest text-xs">Order</TableHead>
-              <TableHead className="text-gray-900 font-bold uppercase tracking-widest text-xs">Customer</TableHead>
-              <TableHead className="text-gray-900 font-bold uppercase tracking-widest text-xs">Status</TableHead>
-              <TableHead className="text-right text-gray-900 font-bold uppercase tracking-widest text-xs">Amount</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Order</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Customer</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Status</TableHead>
+              <TableHead className="text-right text-gray-400 font-black uppercase tracking-widest text-[10px]">Amount</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -53,14 +53,14 @@ export function Sidebar() {
                         href={item.href}
                         className={cn(
                           isActive
-                            ? 'bg-[#1C1C1C] text-white shadow-sm'
-                            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50',
-                          'group flex gap-x-3 rounded-2xl p-3 text-sm leading-6 font-bold uppercase tracking-widest transition-all duration-300'
+                            ? 'bg-[#1C1C1C] text-white shadow-md'
+                            : 'text-gray-500 hover:text-[#FF7A00] hover:bg-[#FF7A00]/10',
+                          'group flex gap-x-4 rounded-full p-3.5 text-xs leading-6 font-black uppercase tracking-widest transition-all duration-300'
                         )}
                       >
                         <item.icon
                           className={cn(
-                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-900',
+                            isActive ? 'text-[#FF7A00]' : 'text-gray-400 group-hover:text-[#FF7A00]',
                             'h-5 w-5 shrink-0 transition-colors duration-300'
                           )}
                           aria-hidden="true"
@@ -78,7 +78,7 @@ export function Sidebar() {
         <div className="mt-auto pb-4 space-y-3 pt-4 border-t border-gray-100">
           <Link
             href="/"
-            className="group flex items-center gap-x-3 rounded-2xl p-3 text-xs uppercase tracking-widest leading-6 font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-300"
+            className="group flex items-center gap-x-3 rounded-full p-3 text-xs uppercase tracking-widest leading-6 font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all duration-300"
           >
             <ArrowLeft
               className="h-4 w-4 shrink-0 text-gray-400 group-hover:text-gray-900 transition-colors"
@@ -89,7 +89,7 @@ export function Sidebar() {
           <form action={adminLogout}>
             <button
               type="submit"
-              className="w-full group flex items-center gap-x-3 rounded-2xl p-3 text-xs uppercase tracking-widest leading-6 font-bold text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-300"
+              className="w-full group flex items-center gap-x-3 rounded-full p-3 text-xs uppercase tracking-widest leading-6 font-bold text-red-500 hover:text-white hover:bg-red-500 transition-all duration-300 shadow-sm"
             >
               Sign Out
             </button>

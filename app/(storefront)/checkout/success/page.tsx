@@ -24,33 +24,33 @@ export default async function SuccessPage({ searchParams }: { searchParams: { or
   const { data: { user } } = await userClient.auth.getUser()
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 py-24 bg-white">
-      <div className="bg-[#F8F9FA] w-full max-w-2xl rounded-[3rem] p-10 sm:p-16 flex flex-col items-center border border-gray-100">
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-8">
-          <CheckCircle className="w-12 h-12 text-[#FF7A00]" />
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 md:px-6 py-16 md:py-24 bg-white">
+      <div className="bg-[#F8F9FA] w-full max-w-2xl rounded-3xl sm:rounded-[3rem] p-6 sm:p-10 md:p-16 flex flex-col items-center border border-gray-100">
+        <div className="w-16 h-16 sm:w-24 sm:h-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 sm:mb-8 shrink-0">
+          <CheckCircle className="w-8 h-8 sm:w-12 sm:h-12 text-[#FF7A00]" />
         </div>
         
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sans font-black text-gray-900 mb-4 uppercase tracking-tighter text-center leading-none">Order Confirmed</h1>
+        <h1 className="text-3xl sm:text-4xl lg:text-6xl font-sans font-black text-gray-900 mb-4 uppercase tracking-tighter text-center leading-none">Order Confirmed</h1>
         
-        <p className="text-gray-500 font-medium mb-10 text-center max-w-md text-base leading-relaxed">
+        <p className="text-gray-500 font-medium mb-8 sm:mb-10 text-center max-w-md text-sm sm:text-base leading-relaxed">
           Thank you for your purchase. Your order <span className="font-bold text-gray-900">#{order?.order_number || orderId.substring(0, 8)}</span> has been successfully placed.
         </p>
 
-        <div className="bg-white rounded-[2rem] border border-gray-100 p-8 w-full mb-10 shadow-sm">
-          <h2 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">Order Details</h2>
-          <div className="space-y-4 text-sm text-gray-500 font-medium">
-            <p className="flex justify-between items-center"><span className="uppercase tracking-widest text-[10px] text-gray-400 font-bold">Status</span> <span className="font-bold text-[#FF7A00] uppercase tracking-widest">{order?.status || 'Processing'}</span></p>
-            <p className="flex justify-between items-center"><span className="uppercase tracking-widest text-[10px] text-gray-400 font-bold">Payment Method</span> <span className="font-bold text-gray-900 uppercase tracking-widest">{order?.payment_method || 'Razorpay'}</span></p>
-            <p className="flex justify-between items-center border-t border-gray-100 pt-4 mt-2"><span className="uppercase tracking-widest text-xs text-gray-900 font-black">Total Paid</span> <span className="font-black text-xl text-gray-900">₹{(order?.total_amount || 0).toFixed(2)}</span></p>
+        <div className="bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 p-5 sm:p-8 w-full mb-8 sm:mb-10 shadow-sm">
+          <h2 className="text-[10px] sm:text-xs font-black text-gray-900 uppercase tracking-widest mb-4 sm:mb-6 border-b border-gray-100 pb-3 sm:pb-4">Order Details</h2>
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-500 font-medium">
+            <p className="flex justify-between items-center"><span className="uppercase tracking-widest text-[9px] sm:text-[10px] text-gray-400 font-bold">Status</span> <span className="font-bold text-[#FF7A00] uppercase tracking-widest text-[10px] sm:text-xs">{order?.status || 'Processing'}</span></p>
+            <p className="flex justify-between items-center"><span className="uppercase tracking-widest text-[9px] sm:text-[10px] text-gray-400 font-bold">Payment Method</span> <span className="font-bold text-gray-900 uppercase tracking-widest text-[10px] sm:text-xs">{order?.payment_method || 'Razorpay'}</span></p>
+            <p className="flex justify-between items-center border-t border-gray-100 pt-3 sm:pt-4 mt-2"><span className="uppercase tracking-widest text-[10px] sm:text-xs text-gray-900 font-black">Total Paid</span> <span className="font-black text-lg sm:text-xl text-gray-900">₹{(order?.total_amount || 0).toFixed(2)}</span></p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row w-full space-y-4 sm:space-y-0 sm:space-x-4">
-          <Link href="/shop" className="flex-1 bg-[#1C1C1C] text-white rounded-full py-5 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-md text-center">
+        <div className="flex flex-col sm:flex-row w-full space-y-3 sm:space-y-0 sm:space-x-4">
+          <Link href="/shop" className="flex-1 bg-[#1C1C1C] text-white rounded-full py-4 sm:py-5 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] transition-colors duration-300 shadow-md text-center">
             Continue Shopping
           </Link>
           {user && (
-            <Link href="/account/orders" className="flex-1 bg-white text-gray-900 border border-gray-200 rounded-full py-5 text-xs font-bold uppercase tracking-widest hover:border-[#FF7A00] hover:text-[#FF7A00] transition-colors duration-300 text-center">
+            <Link href="/account/orders" className="flex-1 bg-white text-gray-900 border border-gray-200 rounded-full py-4 sm:py-5 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:border-[#FF7A00] hover:text-[#FF7A00] transition-colors duration-300 text-center">
               View Order History
             </Link>
           )}

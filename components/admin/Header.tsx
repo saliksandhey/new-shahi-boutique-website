@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 
 export function Header() {
   return (
-    <div className="sticky top-0 z-40 flex h-20 shrink-0 items-center gap-x-4 border-b border-gray-100 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+    <div className="sticky top-0 z-40 flex h-20 shrink-0 items-center gap-x-4 bg-white/80 backdrop-blur-md px-4 sm:gap-x-6 sm:px-6 lg:px-8 border-b border-gray-100">
       <div className="lg:hidden flex items-center">
         <span className="text-xl font-heading font-black uppercase tracking-widest text-gray-900">
           SHAHI ADMIN
@@ -17,16 +17,16 @@ export function Header() {
         <div className="flex items-center gap-x-4 lg:gap-x-6">
           <div className="flex items-center gap-x-4">
             <span className="hidden lg:flex lg:items-center">
-              <span className="text-xs uppercase tracking-widest font-bold leading-6 text-gray-900" aria-hidden="true">
+              <span className="text-xs uppercase tracking-widest font-black leading-6 text-gray-900" aria-hidden="true">
                 Administrator
               </span>
             </span>
-            <div className="h-9 w-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center">
-              <User className="h-4 w-4 text-gray-400" />
+            <div className="h-10 w-10 rounded-full bg-[#1C1C1C] flex items-center justify-center shadow-md">
+              <User className="h-5 w-5 text-white" />
             </div>
             
             <form action={adminLogout}>
-              <Button variant="ghost" size="icon" type="submit" title="Logout" className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full">
+              <Button variant="ghost" size="icon" type="submit" title="Logout" className="text-gray-400 hover:text-white hover:bg-red-500 rounded-full transition-colors h-10 w-10">
                 <LogOut className="h-5 w-5" />
               </Button>
             </form>

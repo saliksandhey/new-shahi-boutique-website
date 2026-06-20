@@ -19,12 +19,12 @@ export default async function AdminCouponsPage() {
 
   return (
     <div className="space-y-6 pb-24 lg:pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 uppercase">Coupons</h1>
-          <p className="mt-1 text-sm font-medium text-gray-500">Manage discount codes.</p>
+          <h1 className="text-2xl md:text-5xl font-heading font-black tracking-widest text-gray-900 uppercase">Coupons</h1>
+          <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 font-bold uppercase tracking-widest">Manage discount codes.</p>
         </div>
-        <Button asChild className="bg-[#1C1C1C] hover:bg-[#FF7A00] text-white rounded-full px-6 shadow-md transition-colors w-full sm:w-auto">
+        <Button asChild className="rounded-full bg-[#1C1C1C] text-white px-8 py-6 text-xs font-bold uppercase tracking-widest hover:bg-[#FF7A00] shadow-xl transition-all duration-300 w-full sm:w-auto">
           <Link href="/admin/coupons/new">
             <Plus className="mr-2 h-4 w-4" /> Add Coupon
           </Link>
@@ -32,44 +32,44 @@ export default async function AdminCouponsPage() {
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden md:block rounded-[2rem] border border-gray-100 bg-white shadow-sm overflow-hidden p-2">
+      <div className="hidden md:block rounded-[2rem] border border-gray-100 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow>
-              <TableHead className="font-bold uppercase tracking-widest text-xs">Code</TableHead>
-              <TableHead className="font-bold uppercase tracking-widest text-xs">Discount</TableHead>
-              <TableHead className="font-bold uppercase tracking-widest text-xs">Expires</TableHead>
-              <TableHead className="font-bold uppercase tracking-widest text-xs">Status</TableHead>
-              <TableHead className="text-right font-bold uppercase tracking-widest text-xs">Actions</TableHead>
+          <TableHeader className="bg-gray-50">
+            <TableRow className="border-gray-100 hover:bg-transparent">
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Code</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Discount</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Expires</TableHead>
+              <TableHead className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Status</TableHead>
+              <TableHead className="text-right text-gray-400 font-black uppercase tracking-widest text-[10px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {coupons?.map((coupon) => (
-              <TableRow key={coupon.id}>
-                <TableCell className="font-medium font-mono uppercase">{coupon.code}</TableCell>
-                <TableCell>
+              <TableRow key={coupon.id} className="border-gray-100 hover:bg-gray-50 transition-colors">
+                <TableCell className="font-black font-mono text-[#FF7A00] uppercase tracking-wider text-sm">{coupon.code}</TableCell>
+                <TableCell className="font-bold text-gray-900">
                   {coupon.discount_type === 'PERCENTAGE' ? `${coupon.discount_value}%` : `₹${coupon.discount_value}`}
                 </TableCell>
-                <TableCell className="text-gray-500">
+                <TableCell className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">
                   {coupon.expiry_date ? new Date(coupon.expiry_date).toLocaleDateString() : 'Never'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={`text-[10px] font-bold tracking-wider uppercase ${coupon.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                  <Badge variant="outline" className={`text-[9px] font-bold tracking-wider uppercase shadow-sm ${coupon.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                     {coupon.active ? 'Active' : 'Inactive'}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
-                    <Button variant="ghost" size="icon" asChild>
+                    <Button variant="ghost" size="icon" asChild className="hover:text-[#FF7A00] hover:bg-[#FF7A00]/10 rounded-full transition-colors h-8 w-8">
                       <Link href={`/admin/coupons/${coupon.id}/edit`}>
-                        <Edit2 className="h-4 w-4 text-gray-500" />
+                        <Edit2 className="h-4 w-4" />
                       </Link>
                     </Button>
                     <form action={async () => {
                       'use server'
                       await deleteCoupon(coupon.id)
                     }}>
-                      <Button variant="ghost" size="icon" type="submit" className="hover:text-red-600">
+                      <Button variant="ghost" size="icon" type="submit" className="hover:text-red-600 hover:bg-red-50 rounded-full transition-colors h-8 w-8">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </form>
@@ -79,7 +79,7 @@ export default async function AdminCouponsPage() {
             ))}
             {!coupons?.length && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={5} className="h-24 text-center text-gray-500 font-bold uppercase tracking-widest text-xs">
                   No coupons found.
                 </TableCell>
               </TableRow>
@@ -91,42 +91,42 @@ export default async function AdminCouponsPage() {
       {/* Mobile Cards */}
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {coupons?.map((coupon) => (
-          <div key={coupon.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+          <div key={coupon.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
             <div className="flex justify-between items-start">
               <div className="font-black font-mono text-[#FF7A00] text-xl uppercase tracking-wider">{coupon.code}</div>
-              <Badge variant="outline" className={`text-[9px] font-bold tracking-wider uppercase ${coupon.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+              <Badge variant="outline" className={`text-[9px] font-bold tracking-wider uppercase shadow-sm ${coupon.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                 {coupon.active ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-2 gap-2 mt-1">
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Discount</p>
                 <p className="font-black text-gray-900 text-lg">{coupon.discount_type === 'PERCENTAGE' ? `${coupon.discount_value}%` : `₹${coupon.discount_value}`}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Expires</p>
-                <p className="font-medium text-gray-900">{coupon.expiry_date ? new Date(coupon.expiry_date).toLocaleDateString() : 'Never'}</p>
+                <p className="font-bold text-[10px] uppercase tracking-widest text-gray-900 mt-1">{coupon.expiry_date ? new Date(coupon.expiry_date).toLocaleDateString() : 'Never'}</p>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-3 border-t border-gray-50 mt-1">
-              <Button variant="outline" size="sm" asChild className="rounded-full">
+            <div className="flex justify-end gap-2 pt-4 border-t border-gray-50 mt-1">
+              <Button variant="outline" size="sm" asChild className="rounded-full font-bold text-[10px] uppercase tracking-widest hover:text-[#FF7A00] hover:bg-orange-50">
                 <Link href={`/admin/coupons/${coupon.id}/edit`}>
-                  <Edit2 className="h-4 w-4 mr-2" /> Edit
+                  <Edit2 className="h-3 w-3 mr-2" /> Edit
                 </Link>
               </Button>
               <form action={async () => {
                 'use server'
                 await deleteCoupon(coupon.id)
               }}>
-                <Button variant="destructive" size="sm" type="submit" className="rounded-full">
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                <Button variant="destructive" size="sm" type="submit" className="rounded-full font-bold text-[10px] uppercase tracking-widest">
+                  <Trash2 className="h-3 w-3 mr-2" /> Delete
                 </Button>
               </form>
             </div>
           </div>
         ))}
         {!coupons?.length && (
-          <div className="text-center p-8 bg-white rounded-2xl border border-gray-100 text-gray-500 text-sm">
+          <div className="text-center p-8 bg-white rounded-2xl border border-gray-100 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
             No coupons found.
           </div>
         )}

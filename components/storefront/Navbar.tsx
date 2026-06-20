@@ -36,7 +36,7 @@ export function Navbar({ categories }: { categories: any[] }) {
   }, [])
 
   const navClasses = cn(
-    "fixed top-4 md:top-6 w-full z-50 transition-all duration-500 ease-in-out px-4 sm:px-6",
+    "fixed top-4 md:top-6 w-full z-[100] transition-all duration-500 ease-in-out px-4 sm:px-6",
     isScrolled ? "top-2 md:top-4" : ""
   )
 
@@ -116,7 +116,7 @@ export function Navbar({ categories }: { categories: any[] }) {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
+        <div className="fixed inset-0 z-[100] flex lg:hidden">
           {/* Backdrop */}
           <div className="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity" onClick={() => setMobileMenuOpen(false)} />
           

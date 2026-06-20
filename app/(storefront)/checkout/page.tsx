@@ -17,13 +17,13 @@ export default async function CheckoutPage() {
   
   return (
     <div className="bg-white min-h-screen pb-16 md:pb-32">
-      <div className="bg-[#F8F9FA] py-10 md:py-16 px-6 text-center rounded-b-[2rem] md:rounded-b-[3rem] mb-8 md:mb-16">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-sans font-black tracking-tighter text-gray-900 uppercase mb-2 md:mb-4 leading-none">
+      <div className="bg-[#F8F9FA] py-8 md:py-16 px-4 text-center rounded-b-3xl md:rounded-b-[3rem] mb-6 md:mb-16 shadow-sm md:shadow-none">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-sans font-black tracking-tighter text-gray-900 uppercase mb-1 md:mb-4 leading-none">
           SECURE CHECKOUT
         </h1>
       </div>
       
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 space-y-6">
         {checkoutNotice && (
           <div className="bg-[#FF7A00]/10 border border-[#FF7A00]/20 p-4 md:p-6 rounded-2xl flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
             <div>
