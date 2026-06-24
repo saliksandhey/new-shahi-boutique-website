@@ -25,6 +25,9 @@ const greatVibes = Great_Vibes({
 });
 
 export const metadata: Metadata = {
+verification: {
+  google: "yqsePleIJgGtYZFvAJRImYMAM2GKkF0uZoqVH-6kqj8",
+},
   title: {
     template: "%s | Boutique",
     default: "Boutique - Premium Fashion & Accessories",
